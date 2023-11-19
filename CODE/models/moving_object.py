@@ -1,5 +1,6 @@
 import threading
 import time
+import osmnx as ox
 
 class MovingObject(threading.Thread):
     def __init__(self, id, graph, start_node, route=None):

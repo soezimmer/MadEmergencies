@@ -1,6 +1,7 @@
-from .moving_object import MovingObject
-from .incident import Incident
+from models.moving_object import MovingObject
+from models.incident import Incident
 import random
+import time 
 
 class Citizen(MovingObject):
     def __init__(self, id, graph, emergency_center):

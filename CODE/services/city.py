@@ -1,8 +1,10 @@
 import osmnx as ox
 import threading
-from ..models import Citizen, FireTruck, PoliceCar
-from ..utils.constants import NORTH, SOUTH, EAST, WEST
-from ..services import EmergencyResponseCenter
+from models.citizen import Citizen
+from models.fire_truck import FireTruck
+from models.police_car import PoliceCar
+from utils.constants import NORTH, SOUTH, EAST, WEST
+from services.emergency_response_center import EmergencyResponseCenter
 
 
 class City:

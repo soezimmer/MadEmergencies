@@ -104,6 +104,11 @@ CODE/
             -------------- CODE OF helpers.py --------------
 
 
+        __pycache__/
+            ├── constants.cpython-310.pyc
+                -------------- CODE OF constants.cpython-310.pyc --------------
+Failed to read constants.cpython-310.pyc: 'utf-8' codec can't decode byte 0x87 in position 9: invalid start byte
+
     models/
         ├── incident.py
             -------------- CODE OF incident.py --------------
@@ -125,8 +130,8 @@ CODE/
             -------------- CODE OF fire_truck.py --------------
             from .moving_object import MovingObject
             from .incident import Incident
-            import random
-            from services import constants
+            import time
+            from utils import constants
             
             firestation = constants.FIRE_STATION
             
@@ -253,14 +258,37 @@ CODE/
                         self.at_home_location = True
                         self.available = True
 
+        __pycache__/
+            ├── police_car.cpython-310.pyc
+                -------------- CODE OF police_car.cpython-310.pyc --------------
+Failed to read police_car.cpython-310.pyc: 'utf-8' codec can't decode byte 0x93 in position 9: invalid start byte
+
+            ├── fire_truck.cpython-310.pyc
+                -------------- CODE OF fire_truck.cpython-310.pyc --------------
+Failed to read fire_truck.cpython-310.pyc: 'utf-8' codec can't decode byte 0x9a in position 8: invalid start byte
+
+            ├── moving_object.cpython-310.pyc
+                -------------- CODE OF moving_object.cpython-310.pyc --------------
+Failed to read moving_object.cpython-310.pyc: 'utf-8' codec can't decode byte 0x93 in position 9: invalid start byte
+
+            ├── incident.cpython-310.pyc
+                -------------- CODE OF incident.cpython-310.pyc --------------
+Failed to read incident.cpython-310.pyc: 'utf-8' codec can't decode byte 0x96 in position 9: invalid start byte
+
+            ├── citizen.cpython-310.pyc
+                -------------- CODE OF citizen.cpython-310.pyc --------------
+Failed to read citizen.cpython-310.pyc: 'utf-8' codec can't decode byte 0x84 in position 8: invalid start byte
+
     services/
         ├── city.py
             -------------- CODE OF city.py --------------
             import osmnx as ox
             import threading
-            from ..models import Citizen, FireTruck, PoliceCar
-            from ..utils.constants import NORTH, SOUTH, EAST, WEST
-            from ..services import EmergencyResponseCenter
+            from models.citizen import Citizen
+            from models.fire_truck import FireTruck
+            from models.police_car import PoliceCar
+            from utils.constants import NORTH, SOUTH, EAST, WEST
+            from emergency_response_center import EmergencyResponseCenter
             
             
             class City:
@@ -444,4 +472,9 @@ CODE/
                     elif self.to_sort.secondary_help == "crime":
                         self.dispatch_vehicles(self.firetrucks, self.to_sort, 1, self.fire_incidents_lock)
 
+
+        __pycache__/
+            ├── city.cpython-310.pyc
+                -------------- CODE OF city.cpython-310.pyc --------------
+Failed to read city.cpython-310.pyc: 'utf-8' codec can't decode byte 0xa7 in position 8: invalid start byte
 
