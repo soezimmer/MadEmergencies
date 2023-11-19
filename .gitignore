@@ -1,3 +1,4 @@
 cache/
 scratch/
 .venv/
+.DS_Store
