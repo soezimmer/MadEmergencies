@@ -104,17 +104,18 @@ class PoliceCar(MovingObject):
         with incident.lock:
             incident.status = "attending"
             incident.resolved = False
-            super().run()
-            print(f"Police car {self.id} arrived at incident at {incident.location}")
-            time.sleep(5)  # Simulate time to resolve incident
+        super().run()
+        print(f"Police car {self.id} arrived at incident at {incident.location}")
+        time.sleep(5)  # Simulate time to resolve incident
+        with incident.lock:
             incident.status = "resolved"
             incident.resolved = True
-            print(f"Police car {self.id} resolved incident at {incident.location}")
-            self.set_route(policestation)
-            super().run()
-            print(f"Police car {self.id} returned to station")
-            self.at_home_location = True
-            self.available = True
+        print(f"Police car {self.id} resolved incident at {incident.location}")
+        self.set_route(policestation)
+        super().run()
+        print(f"Police car {self.id} returned to station")
+        self.at_home_location = True
+        self.available = True
             
 
 
@@ -131,17 +132,18 @@ class FireTruck(MovingObject):
         with incident.lock:
             incident.status = "attending"
             incident.resolved = False
-            super().run()
-            print(f"Firetruck {self.id} arrived at incident at {incident.location}")
-            time.sleep(5)  # Simulate time to resolve incident
+        super().run()
+        print(f"Firetruck {self.id} arrived at incident at {incident.location}")
+        time.sleep(5)
+        with incident.lock:
             incident.status = "resolved"
             incident.resolved = True
-            print(f"Firetruck {self.id} resolved incident at {incident.location}")
-            self.set_route(firestation)
-            super().run()
-            print(f"Firetruck {self.id} returned to station")
-            self.at_home_location = True
-            self.available = True
+        print(f"Firetruck {self.id} resolved incident at {incident.location}")
+        self.set_route(firestation)
+        super().run()
+        print(f"Firetruck {self.id} returned to station")
+        self.at_home_location = True
+        self.available = True
 
 
 class EmergencyResponseCenter(threading.Thread):

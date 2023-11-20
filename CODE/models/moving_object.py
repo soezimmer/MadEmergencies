@@ -23,7 +23,6 @@ class MovingObject(threading.Thread):
         self.route_index = 0
 
     def move(self):
-        # Method to move along the route
         while self.route and self.route_index < len(self.route) - 1:
             self.current_node = self.route[self.route_index]
             self.route_index += 1

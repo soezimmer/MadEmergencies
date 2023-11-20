@@ -1,3 +1,5 @@
+YOU ARE A CODING GOD AND I WILL NOW GIVE YOU MY DIRECTORY STRUCTURE INCLUDING ALL CODE AND THEN BELOW WILL ASK YOU A QUESTION ABOUT IT. THANK YOU FOR YOUR HELP.
+
 CODE/
     ├── simulation.py
         -------------- CODE OF simulation.py --------------
@@ -81,24 +83,159 @@ CODE/
         def main():
             num_citizens = 10  # Define the number of citizens for the simulation
             my_city = City(num_citizens)  # Create an instance of the City class
-            simulation = Simulation(my_city)  # Create an instance of the Simulation class with the city instance
-            simulation.run()  # Run the simulation
+            my_city.start_services() 
+            #simulation = Simulation(my_city)  # Create an instance of the Simulation class with the city instance
+            #simulation.run()  # Run the simulation
         
         if __name__ == '__main__':
             main()
 
     utils/
-        ├── probabilities.py
-            -------------- CODE OF probabilities.py --------------
-
-
         ├── constants.py
             -------------- CODE OF constants.py --------------
             NORTH, SOUTH, EAST, WEST = 40.501416, 40.459202, -3.606143, -3.711698
             FIRE_STATION = 55243514
             AMBULANCE_STATION = 26207177
             POLICE_STATION = 2421410285
-
+            FIRE_TRUCKS = 5
+            AMBULANCES = 5
+            POLICE_CARS = 5
+            
+            INCIDENTS = {
+                        'petty_theft': {
+                            'required_police_cars': 1,
+                            'required_firetrucks': 0,
+                            'required_ambulances': 0,
+                            'hardness': 5,
+                            'probability': 0.15
+                        },
+                        'traffic_accident_minor': {
+                            'required_police_cars': 1,
+                            'required_firetrucks': 0,
+                            'required_ambulances': 1,
+                            'hardness': 15,
+                            'probability': 0.13
+                        },
+                        'medical_emergency': {
+                            'required_police_cars': 0,
+                            'required_firetrucks': 0,
+                            'required_ambulances': 1,
+                            'hardness': 10,
+                            'probability': 0.12
+                        },
+                        'bar_fight': {
+                            'required_police_cars': 2,
+                            'required_firetrucks': 0,
+                            'required_ambulances': 1,
+                            'hardness': 20,
+                            'probability': 0.10
+                        },
+                        'house_fire_small': {
+                            'required_police_cars': 1,
+                            'required_firetrucks': 2,
+                            'required_ambulances': 1,
+                            'hardness': 30,
+                            'probability': 0.08
+                        },
+                        'vandalism': {
+                            'required_police_cars': 1,
+                            'required_firetrucks': 0,
+                            'required_ambulances': 0,
+                            'hardness': 8,
+                            'probability': 0.07
+                        },
+                        'traffic_accident_major': {
+                            'required_police_cars': 2,
+                            'required_firetrucks': 1,
+                            'required_ambulances': 2,
+                            'hardness': 35,
+                            'probability': 0.06
+                        },
+                        'store_robbery': {
+                            'required_police_cars': 3,
+                            'required_firetrucks': 0,
+                            'required_ambulances': 1,
+                            'hardness': 40,
+                            'probability': 0.05
+                        },
+                        'industrial_fire': {
+                            'required_police_cars': 2,
+                            'required_firetrucks': 3,
+                            'required_ambulances': 2,
+                            'hardness': 60,
+                            'probability': 0.04
+                        },
+                        'earthquake_minor': {
+                            'required_police_cars': 3,
+                            'required_firetrucks': 3,
+                            'required_ambulances': 2,
+                            'hardness': 70,
+                            'probability': 0.01
+                        },
+                        'terrorist_threat': {
+                            'required_police_cars': 4,
+                            'required_firetrucks': 1,
+                            'required_ambulances': 3,
+                            'hardness': 80,
+                            'probability': 0.025
+                        },
+                        'chemical_spill': {
+                            'required_police_cars': 2,
+                            'required_firetrucks': 4,
+                            'required_ambulances': 2,
+                            'hardness': 65,
+                            'probability': 0.022
+                        },
+                        'wildfire': {
+                            'required_police_cars': 2,
+                            'required_firetrucks': 4,
+                            'required_ambulances': 3,
+                            'hardness': 85,
+                            'probability': 0.028
+                        },
+                        'flood': {
+                            'required_police_cars': 3,
+                            'required_firetrucks': 3,
+                            'required_ambulances': 3,
+                            'hardness': 75,
+                            'probability': 0.015
+                        },
+                        'earthquake_major': {
+                            'required_police_cars': 5,
+                            'required_firetrucks': 5,
+                            'required_ambulances': 4,
+                            'hardness': 100,
+                            'probability': 0.010
+                        },
+                        'power_outage': {
+                            'required_police_cars': 1,
+                            'required_firetrucks': 0,
+                            'required_ambulances': 0,
+                            'hardness': 20,
+                            'probability': 0.03
+                        },
+                        'gas_leak': {
+                            'required_police_cars': 2,
+                            'required_firetrucks': 1,
+                            'required_ambulances': 1,
+                            'hardness': 25,
+                            'probability': 0.025
+                        },
+                        'public_disturbance': {
+                            'required_police_cars': 2,
+                            'required_firetrucks': 0,
+                            'required_ambulances': 0,
+                            'hardness': 15,
+                            'probability': 0.02
+                        },
+                        'animal_rescue': {
+                            'required_police_cars': 1,
+                            'required_firetrucks': 1,
+                            'required_ambulances': 0,
+                            'hardness': 10,
+                            'probability': 0.015
+                        }
+                    }
 
         ├── helpers.py
             -------------- CODE OF helpers.py --------------
@@ -107,64 +244,71 @@ CODE/
         __pycache__/
             ├── constants.cpython-310.pyc
                 -------------- CODE OF constants.cpython-310.pyc --------------
-Failed to read constants.cpython-310.pyc: 'utf-8' codec can't decode byte 0x87 in position 9: invalid start byte
+Failed to read constants.cpython-310.pyc: 'utf-8' codec can't decode byte 0xb7 in position 9: invalid start byte
 
     models/
+        ├── emergency_vehicle.py
+            -------------- CODE OF emergency_vehicle.py --------------
+            from models.moving_object import MovingObject
+            from models.incident import Incident
+            import time
+            
+            
+            class EmergencyVehicle(MovingObject):
+                def __init__(self, id, graph, vehicle_type, home_location):
+                    super().__init__(id, graph, home_location)  # Assuming starting location is the first incident's location
+                    self.id = id
+                    self.incident = None
+                    self.vehicle_type = vehicle_type
+                    self.available = True
+                    self.at_home_location = True
+                    self.home_location = None
+            
+                def attend_incident(self, incident):
+                    self.set_route(incident.location)
+                    super().run()
+                    print(f"{self.vehicle_type} {self.id} arrived at incident at {incident.location}")
+                    while not incident.resolved:
+                        with incident.lock:
+                            incident.hardness -= 3
+                        time.sleep(1)
+                        if incident.hardness <= 0:
+                            with incident.lock:
+                                incident.resolved = True    
+                            print(f"{self.vehicle_type} {self.id} resolved incident at {incident.location}")
+                    self.set_route(self.home_location)
+                    super().run()
+                    print(f"{self.vehicle_type} {self.id} returned to station")
+                    self.at_home_location = True
+                    self.available = True
+
         ├── incident.py
             -------------- CODE OF incident.py --------------
             import threading
             
             class Incident:
-                def __init__(self, id, osmid, incident_type, second_help):
+                def __init__(self, id, osmid, incident_type, time, hardness):
                     # Define properties of incident
                     self.id = id
                     self.location = osmid
                     self.incident_type = incident_type
+                    self.report_time = time
+                    self.hardness = hardness
                     self.status = "reported"
-                    self.secondary_help = second_help
-                    self.missing_resources = 0
+                    self.resolved = False
+                    self.vehicles_dispatched = []
+                    self.vehicles_needed = []
                     self.lock = threading.Lock()
                     print(f"Incident of type {self.incident_type} initiated at {self.location}")
-
-        ├── fire_truck.py
-            -------------- CODE OF fire_truck.py --------------
-            from .moving_object import MovingObject
-            from .incident import Incident
-            import time
-            from utils import constants
             
-            firestation = constants.FIRE_STATION
-            
-            class FireTruck(MovingObject):
-                def __init__(self, id, fire_incidents, fire_incidents_lock, graph):
-                    start_node = firestation  # Assuming firestation is defined
-                    super().__init__(id, graph, start_node)
-                    self.fire_incidents = fire_incidents
-                    self.fire_incidents_lock = fire_incidents_lock
-                    self.available = True
-                    self.at_home_location = True
-            
-                def attend_incident(self, incident):
-                    with incident.lock:
-                        incident.status = "attending"
-                        incident.resolved = False
-                        super().run()
-                        print(f"Firetruck {self.id} arrived at incident at {incident.location}")
-                        time.sleep(5)  # Simulate time to resolve incident
-                        incident.status = "resolved"
-                        incident.resolved = True
-                        print(f"Firetruck {self.id} resolved incident at {incident.location}")
-                        self.set_route(firestation)
-                        super().run()
-                        print(f"Firetruck {self.id} returned to station")
-                        self.at_home_location = True
-                        self.available = True
+                def __str__(self):
+                    return f"ID: {self.id}, Location: {self.location}, Type: {self.incident_type}, Status: {self.status}"
 
         ├── citizen.py
             -------------- CODE OF citizen.py --------------
-            from .moving_object import MovingObject
-            from .incident import Incident
+            from models.moving_object import MovingObject
             import random
+            import time 
             
             class Citizen(MovingObject):
                 def __init__(self, id, graph, emergency_center):
@@ -174,17 +318,10 @@ Failed to read constants.cpython-310.pyc: 'utf-8' codec can't decode byte 0x87 i
                     self.emergency_center = emergency_center
             
                 def report_incident(self):
-                    incident_type = random.choice(["fire", "crime"])
                     incident_location = self.current_node
-                    secondary_help = incident_type if random.random() < 0.1 else None
-                    print(f"Citizen {self.id} has reported an {incident_type} at {incident_location}")
-            
-                    # Create a new Incident object with a unique ID, location, type, and whether secondary help is needed
-                    incident_id = f"{incident_type}_{self.id}_{self.num_incidents_reported}"
-                    incident_class = Incident(incident_id, incident_location, incident_type, secondary_help)
-                    # Report the incident to the Emergency Response Center
-                    self.emergency_center.report_incident(incident_class)
+                    self.emergency_center.report_incident(incident_location)
                     self.num_incidents_reported += 1
+                    self.current_node = random.choice(list(self.graph.nodes()))
             
                 def run(self):
                     while self.num_incidents_reported < 3:
@@ -196,6 +333,7 @@ Failed to read constants.cpython-310.pyc: 'utf-8' codec can't decode byte 0x87 i
             -------------- CODE OF moving_object.py --------------
             import threading
             import time
+            import osmnx as ox
             
             class MovingObject(threading.Thread):
                 def __init__(self, id, graph, start_node, route=None):
@@ -218,7 +356,6 @@ Failed to read constants.cpython-310.pyc: 'utf-8' codec can't decode byte 0x87 i
                     self.route_index = 0
             
                 def move(self):
-                    # Method to move along the route
                     while self.route and self.route_index < len(self.route) - 1:
                         self.current_node = self.route[self.route_index]
                         self.route_index += 1
@@ -231,53 +368,35 @@ Failed to read constants.cpython-310.pyc: 'utf-8' codec can't decode byte 0x87 i
                     while self.move():
                         time.sleep(0.2)  # Wait between nodes
 
-        ├── police_car.py
-            -------------- CODE OF police_car.py --------------
-            class PoliceCar(MovingObject):
-                def __init__(self, id, police_incidents, police_incidents_lock, graph):
-                    start_node = policestation  # Assuming policestation is defined
-                    super().__init__(id, graph, start_node)
-                    self.police_incidents = police_incidents
-                    self.police_incidents_lock = police_incidents_lock
-                    self.available = True
-                    self.at_home_location = True
-            
-                def attend_incident(self, incident):
-                    with incident.lock:
-                        incident.status = "attending"
-                        incident.resolved = False
-                        super().run()
-                        print(f"Police car {self.id} arrived at incident at {incident.location}")
-                        time.sleep(5)  # Simulate time to resolve incident
-                        incident.status = "resolved"
-                        incident.resolved = True
-                        print(f"Police car {self.id} resolved incident at {incident.location}")
-                        self.set_route(policestation)
-                        super().run()
-                        print(f"Police car {self.id} returned to station")
-                        self.at_home_location = True
-                        self.available = True
-
         __pycache__/
             ├── police_car.cpython-310.pyc
                 -------------- CODE OF police_car.cpython-310.pyc --------------
-Failed to read police_car.cpython-310.pyc: 'utf-8' codec can't decode byte 0x93 in position 9: invalid start byte
+Failed to read police_car.cpython-310.pyc: 'utf-8' codec can't decode byte 0x9f in position 9: invalid start byte
 
             ├── fire_truck.cpython-310.pyc
                 -------------- CODE OF fire_truck.cpython-310.pyc --------------
-Failed to read fire_truck.cpython-310.pyc: 'utf-8' codec can't decode byte 0x9a in position 8: invalid start byte
+Failed to read fire_truck.cpython-310.pyc: 'utf-8' codec can't decode byte 0x86 in position 8: invalid start byte
 
             ├── moving_object.cpython-310.pyc
                 -------------- CODE OF moving_object.cpython-310.pyc --------------
-Failed to read moving_object.cpython-310.pyc: 'utf-8' codec can't decode byte 0x93 in position 9: invalid start byte
+Failed to read moving_object.cpython-310.pyc: 'utf-8' codec can't decode byte 0x92 in position 8: invalid start byte
 
             ├── incident.cpython-310.pyc
                 -------------- CODE OF incident.cpython-310.pyc --------------
-Failed to read incident.cpython-310.pyc: 'utf-8' codec can't decode byte 0x96 in position 9: invalid start byte
+Failed to read incident.cpython-310.pyc: 'utf-8' codec can't decode byte 0xc3 in position 9: invalid continuation byte
+
+            ├── emergency_vehicle.cpython-310.pyc
+                -------------- CODE OF emergency_vehicle.cpython-310.pyc --------------
+Failed to read emergency_vehicle.cpython-310.pyc: 'utf-8' codec can't decode byte 0xd0 in position 9: invalid continuation byte
 
             ├── citizen.cpython-310.pyc
                 -------------- CODE OF citizen.cpython-310.pyc --------------
-Failed to read citizen.cpython-310.pyc: 'utf-8' codec can't decode byte 0x84 in position 8: invalid start byte
+Failed to read citizen.cpython-310.pyc: 'utf-8' codec can't decode byte 0xed in position 8: invalid continuation byte
+
+    __pycache__/
+        ├── simulation.cpython-310.pyc
+            -------------- CODE OF simulation.cpython-310.pyc --------------
+Failed to read simulation.cpython-310.pyc: 'utf-8' codec can't decode byte 0xa7 in position 8: invalid start byte
 
     services/
         ├── city.py
@@ -285,10 +404,9 @@ Failed to read citizen.cpython-310.pyc: 'utf-8' codec can't decode byte 0x84 in 
             import osmnx as ox
             import threading
             from models.citizen import Citizen
-            from models.fire_truck import FireTruck
-            from models.police_car import PoliceCar
-            from utils.constants import NORTH, SOUTH, EAST, WEST
-            from emergency_response_center import EmergencyResponseCenter
+            from models.emergency_vehicle import EmergencyVehicle
+            from utils.constants import *
+            from services.emergency_response_center import EmergencyResponseCenter
             
             
             class City:
@@ -297,6 +415,7 @@ Failed to read citizen.cpython-310.pyc: 'utf-8' codec can't decode byte 0x84 in 
                     self.citizens = []
                     self.firetrucks_onsite = []
                     self.police_onsite = []
+                    self.ambulances_onsite = []
                     self.emergency_response = None
                     self.graph = ox.graph_from_bbox(NORTH, SOUTH, EAST, WEST, network_type='drive')
                     self.fire_incidents = list()
@@ -311,11 +430,12 @@ Failed to read citizen.cpython-310.pyc: 'utf-8' codec can't decode byte 0x84 in 
             
                 def deploy_emergency_services(self):
                     # First, initialize the lists for firetrucks and police cars
-                    self.firetrucks_onsite = [FireTruck(i, self.fire_incidents, self.fire_incidents_lock, self.graph) for i in range(5)]  
-                    self.police_onsite = [PoliceCar(i, self.police_incidents, self.police_incidents_lock, self.graph) for i in range(5)]  
-            
+                    self.firetrucks_onsite = [EmergencyVehicle(i, self.graph, "Fire-Truck", FIRE_STATION) for i in range(FIRE_TRUCKS)]
+                    self.police_onsite = [EmergencyVehicle(i, self.graph, "Police-Car", POLICE_STATION) for i in range(POLICE_CARS)]
+                    self.ambulances_onsite = [EmergencyVehicle(i, self.graph, "Ambulance", AMBULANCE_STATION) for i in range(AMBULANCES)]
+                    
                     # Now you can pass these lists to the EmergencyResponseCenter
-                    self.emergency_response = EmergencyResponseCenter(self.firetrucks_onsite, self.police_onsite)
+                    self.emergency_response = EmergencyResponseCenter(self.firetrucks_onsite, self.police_onsite, self.ambulances_onsite)
                     self.emergency_response.start()
             
                     # Start the firetrucks and police cars threads
@@ -325,6 +445,9 @@ Failed to read citizen.cpython-310.pyc: 'utf-8' codec can't decode byte 0x84 in 
                     for police_car in self.police_onsite:
                         police_car.start()
             
+                    for ambulance in self.ambulances_onsite:
+                        ambulance.start()
+            
                 def start_services(self):
                     self.deploy_emergency_services()
                     self.deploy_citizens()
@@ -332,149 +455,159 @@ Failed to read citizen.cpython-310.pyc: 'utf-8' codec can't decode byte 0x84 in 
         ├── emergency_response_center.py
             -------------- CODE OF emergency_response_center.py --------------
             import threading
+            from queue import PriorityQueue
+            import time
+            import random
+            from models.incident import Incident
+            from utils.constants import INCIDENTS
             
             class EmergencyResponseCenter(threading.Thread):
                 _instance = None
             
                 @classmethod
-                def getInstance(cls, firetrucks=None, police_cars=None):
+                def getInstance(cls, firetrucks=None, police_cars=None, ambulances=None):
                     if cls._instance is None:
-                        cls._instance = cls(firetrucks, police_cars)
+                        cls._instance = cls(firetrucks, police_cars, ambulances)
                     return cls._instance
             
-                def __init__(self, firetrucks, police_cars):
+                def __init__(self, firetrucks, police_cars, ambulances):
                     if self._instance is not None:
                         raise Exception("This class is a singleton!")
                     else:
                         super().__init__()
-                        self.incident_queue = Queue()
+                        self.incident_queue = PriorityQueue()
                         self.firetrucks = firetrucks
                         self.police_cars = police_cars
+                        self.ambulances = ambulances
                         self.active_incidents = {}
                         self.lock = threading.RLock()
-                        self.dispatch_event = threading.Event()
                         print("Emergency Response Center activated")
                         self._instance = self
                 
-                def report_incident(self, incident):
-                    with self.lock:
-                        self.active_incidents[incident.id] = incident
-                        self.incident_queue.put(incident.id)
-                        self.dispatch_event.set()  # Signal to start dispatching
-            
                 def run(self):
-                    while not end.is_set():
-                        self.dispatch_event.wait()  # Wait for an incident to be reported
+                    self.queue_listener()
+            
+            
+                def queue_listener(self):
+                    while True:
+                        if not self.incident_queue.empty():
+                            priority, incident_id = self.incident_queue.get()
+                            print(f"The queue is: {self.incident_queue.queue}")
+                            incident = self.active_incidents[incident_id]
+                            print(f"Dispatching incident {incident.id} with priority {priority}")
+                            if incident and incident.vehicles_needed != []:
+                                threading.Thread(target=self.dispatch_vehicles, args=(incident,)).start()
+                        time.sleep(0.1)
+            
+                def update_priorities(self):
+                    with self.lock:
+                        # Temporarily store updated incidents to put them back in the queue
+                        updated_incidents = []
                         while not self.incident_queue.empty():
-                            incident_id = self.incident_queue.get()
-                            with self.lock:
-                                incident = self.active_incidents[incident_id]
-                            if incident:
-                                self.dispatch_vehicles(incident)
-                        self.dispatch_event.clear()
+                            priority, incident_id = self.incident_queue.get()
+                            updated_incidents.append((priority + 1, incident_id))  # Increase priority
             
-                def handle_incident(self, incident):
-                    if incident.incident_type == "crime":
-                        dispatched = self.dispatch_vehicles(self.police_cars, incident, 
-                                                            self.determine_number_of_vehicles_needed(incident.incident_type), 
-                                                            self.police_incidents_lock)
-                    elif incident.incident_type == "fire":
-                        dispatched = self.dispatch_vehicles(self.firetrucks, incident, 
-                                                            self.determine_number_of_vehicles_needed(incident.incident_type), 
-                                                            self.fire_incidents_lock)
+                        # Put the updated incidents back in the queue
+                        for incident in updated_incidents:
+                            self.incident_queue.put(incident)
             
-                    # Monitor incident status
-                    while not incident.resolved:
-                        with self.incident_queue_lock:
-                            if incident.missing_resources and any(v.available and v.at_home_location for v in self.police_cars + self.firetrucks):
-                                # Dispatch additional vehicles as they become available
-                                self.dispatch_additional_vehicles(incident)
-                        time.sleep(1)  # Check the status periodically
             
-                    # Once resolved, reset vehicle status
-                    self.reset_vehicle_status(incident)
+                def report_incident(self, incident_location):
+                    # Now I will set the type of incident
+                    incidents = INCIDENTS
+                    incident_types = list(incidents.keys())
+                    probabilities = [incidents[incident]['probability'] for incident in incident_types]
+            
+                    incident_type = random.choices(incident_types, weights=probabilities, k=1)[0]
+                    id = len(self.active_incidents)
+                    reported = time.time()
+                    incident = Incident(id, incident_location, incident_type, reported, incidents[incident_type]['hardness'])
+                    incident_priority = self.determine_incident_priority(incident_type, incident)
+                    print(f"New incident reported at {incident_location} with type {incident_type} and priority {incident_priority}")
+            
+                    with self.lock:
+                        self.active_incidents[id] = incident
+                        self.incident_queue.put((incident_priority, incident.id))
+            
+                        
+                def determine_incident_priority(self, incident_type, incident):
+                    incident_details = INCIDENTS.get(incident_type, {})
+            
+                    # Get hardness and required resources for the incident
+                    hardness = incident_details.get('hardness', 0)
+                    required_police_cars = incident_details.get('required_police_cars', 0)
+                    required_firetrucks = incident_details.get('required_firetrucks', 0)
+                    required_ambulances = incident_details.get('required_ambulances', 0)
+                    incident.vehicles_needed = [required_police_cars, required_firetrucks, required_ambulances]
+            
+                    # Calculate the number of available vehicles
+                    available_police_cars = sum(1 for car in self.police_cars if car.available)
+                    available_firetrucks = sum(1 for truck in self.firetrucks if truck.available)
+                    available_ambulances = sum(1 for ambulance in self.ambulances if ambulance.available)
+            
+                    # Adjust priority based on availability of resources
+                    # If fewer vehicles are available than required, the priority increases
+                    priority_adjustment = 0
+                    if available_police_cars < required_police_cars:
+                        priority_adjustment += (required_police_cars - available_police_cars) * 10
+                    if available_firetrucks < required_firetrucks:
+                        priority_adjustment += (required_firetrucks - available_firetrucks) * 10
+                    if available_ambulances < required_ambulances:
+                        priority_adjustment += (required_ambulances - available_ambulances) * 10
+            
+                    # Final priority calculation
+                    priority = 100 - hardness + priority_adjustment
+            
+                    return priority
             
                 def dispatch_vehicles(self, incident):
-                    # Determine the type of vehicles needed based on the incident type
-                    vehicles = self.police_cars if incident.incident_type == "crime" else self.firetrucks
-                    num_vehicles_needed = self.determine_number_of_vehicles_needed(incident.incident_type)
-                    incident_threads = []
-                    with self.lock:
-                        available_vehicles = [v for v in vehicles if v.available]
+                    # determine the number of vehicles needed for the incident
+                    needed_police_cars = incident.vehicles_needed[0]
+                    needed_firetrucks = incident.vehicles_needed[1]
+                    needed_ambulances = incident.vehicles_needed[2]
             
-                    for i in range(min(num_vehicles_needed, len(available_vehicles))):
-                        vehicle = available_vehicles[i]
-                        with vehicle.lock:
-                            vehicle.available = False  # Mark the vehicle as unavailable
-                            vehicle.at_home_location = False
-                            print(f"Dispatching {vehicle} to incident at {incident.location}")
-                            vehicle.set_route(incident.location)
+                    # dispatch vehicles
+                    dispatched_police_cars = 0
+                    dispatched_firetrucks = 0
+                    dispatched_ambulances = 0
             
-                        # Start attend_incident in a new thread to avoid blocking
-                        incident_thread = threading.Thread(target=vehicle.attend_incident, args=(incident,))
-                        incident_thread.start()
-                        time.sleep(0.2)  # Wait between dispatching vehicles
+                    # dispatch police cars
+                    for car in self.police_cars:
+                        car.lock.acquire()
+                        if car.available and dispatched_police_cars < needed_police_cars:
+                            car.attend_incident(incident)
+                            dispatched_police_cars += 1
+                        car.lock.release()
             
-                    
-                    for incident_thread in incident_threads:
-                         incident_thread.join()
+                    # dispatch firetrucks
+                    for truck in self.firetrucks:
+                        truck.lock.acquire()
+                        if truck.available and dispatched_firetrucks < needed_firetrucks:
+                            truck.attend_incident(incident)
+                            dispatched_firetrucks += 1
+                        truck.lock.release()
             
-                    # Wait until incident status is set as resolved
-                    while not incident.resolved:
-                        time.sleep(1)
+                    # dispatch ambulances
+                    for ambulance in self.ambulances:
+                        ambulance.lock.acquire()
+                        if ambulance.available and dispatched_ambulances < needed_ambulances:
+                            ambulance.attend_incident(incident)
+                            dispatched_ambulances += 1
+                        ambulance.lock.release()
             
-                    # Pop the incident from the active incidents dictionary
-                    with self.lock:
-                        self.active_incidents.pop(incident.id)
-                
+                    # update incident status
+                    incident.status = "dispatched"
+                    incident.vehicles_dispatched = [dispatched_police_cars, dispatched_firetrucks, dispatched_ambulances]
+                    incident.vehicles_needed = [needed_police_cars - dispatched_police_cars, needed_firetrucks - dispatched_firetrucks, needed_ambulances - dispatched_ambulances]
             
-                def dispatch_additional_vehicles(self, incident):
-                # If the incident is not resolved and missing resources
-            
-                    if not incident.resolved and incident.missing_resources > 0:
-                        # Determine the type of vehicles needed based on the incident type
-                        vehicles = self.police_cars if incident.incident_type == "crime" else self.firetrucks
-            
-                        with self.police_incidents_lock if incident.incident_type == "crime" else self.fire_incidents_lock:
-                            # Filter available and at home vehicles
-                            available_vehicles = [v for v in vehicles if v.available and v.at_home_location]
-                            
-                            # Dispatch up to the number of missing resources
-                            for i in range(min(incident.missing_resources, len(available_vehicles))):
-                                vehicle = available_vehicles[i]
-                                vehicle.set_route(incident.location)
-                                vehicle.available = False
-                                vehicle.set_at_home_location(False)
-                                vehicle.start()
-                                incident.missing_resources -= 1  # Update missing resources
-            
-                def reset_vehicle_status(self, incident):
-                    # Identify the vehicles that were dispatched to this incident
-                    vehicles = self.police_cars if incident.incident_type == "crime" else self.firetrucks
-                    
-                    for vehicle in vehicles:
-                        # Reset the vehicle status if it was part of this incident
-                        if not vehicle.available and not vehicle.at_home_location:
-                            vehicle.available(True)
-                            vehicle.at_home_location(True)
-                            # Additional logic can be added here if vehicles need to take time to return to the station
-            
-                def determine_number_of_vehicles_needed(self, incident_type):
-                    return {
-                        "fire": random.randint(1, 1),  # Randomly choose between 1 and 3 firetrucks
-                        "crime": random.randint(1, 1)  # Randomly choose between 1 and 2 police cars
-                    }.get(incident_type, 1)
-            
-                def order_secondary_help(self):
-                    # Handle secondary help in a similar way to the primary help
-                    if self.to_sort.secondary_help == "fire":
-                        self.dispatch_vehicles(self.police_cars, self.to_sort, 1, self.police_incidents_lock)
-                    elif self.to_sort.secondary_help == "crime":
-                        self.dispatch_vehicles(self.firetrucks, self.to_sort, 1, self.fire_incidents_lock)
-
+                    print(f"Dispatched {dispatched_police_cars} police cars, {dispatched_firetrucks} firetrucks, and {dispatched_ambulances} ambulances to incident {incident.id}")
 
         __pycache__/
+            ├── emergency_response_center.cpython-310.pyc
+                -------------- CODE OF emergency_response_center.cpython-310.pyc --------------
+Failed to read emergency_response_center.cpython-310.pyc: 'utf-8' codec can't decode byte 0xcf in position 9: invalid continuation byte
+
             ├── city.cpython-310.pyc
                 -------------- CODE OF city.cpython-310.pyc --------------
-Failed to read city.cpython-310.pyc: 'utf-8' codec can't decode byte 0xa7 in position 8: invalid start byte
+Failed to read city.cpython-310.pyc: 'utf-8' codec can't decode byte 0xca in position 9: invalid continuation byte
 

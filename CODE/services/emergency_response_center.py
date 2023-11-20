@@ -1,144 +1,147 @@
 import threading
-from queue import Queue
+from queue import PriorityQueue
 import time
 import random
 from models.incident import Incident
+from utils.constants import INCIDENTS
 
 class EmergencyResponseCenter(threading.Thread):
     _instance = None
 
     @classmethod
-    def getInstance(cls, firetrucks=None, police_cars=None):
+    def getInstance(cls, firetrucks=None, police_cars=None, ambulances=None):
         if cls._instance is None:
-            cls._instance = cls(firetrucks, police_cars)
+            cls._instance = cls(firetrucks, police_cars, ambulances)
         return cls._instance
 
-    def __init__(self, firetrucks, police_cars):
+    def __init__(self, firetrucks, police_cars, ambulances):
         if self._instance is not None:
             raise Exception("This class is a singleton!")
         else:
             super().__init__()
-            self.incident_queue = Queue()
+            self.incident_queue = PriorityQueue()
             self.firetrucks = firetrucks
             self.police_cars = police_cars
+            self.ambulances = ambulances
             self.active_incidents = {}
             self.lock = threading.RLock()
-            self.dispatch_event = threading.Event()
             print("Emergency Response Center activated")
             self._instance = self
     
-    def report_incident(self, incident):
-        with self.lock:
-            self.active_incidents[incident.id] = incident
-            self.incident_queue.put(incident.id)
-            self.dispatch_event.set()  # Signal to start dispatching
-
     def run(self):
-        while not end.is_set():
-            self.dispatch_event.wait()  # Wait for an incident to be reported
+        self.queue_listener()
+
+
+    def queue_listener(self):
+        while True:
+            if not self.incident_queue.empty():
+                priority, incident_id = self.incident_queue.get()
+                print(f"The queue is: {self.incident_queue.queue}")
+                incident = self.active_incidents[incident_id]
+                print(f"Dispatching incident {incident.id} with priority {priority}")
+                if incident and incident.vehicles_needed != []:
+                    threading.Thread(target=self.dispatch_vehicles, args=(incident,)).start()
+            time.sleep(0.1)
+
+    def update_priorities(self):
+        with self.lock:
+            # Temporarily store updated incidents to put them back in the queue
+            updated_incidents = []
             while not self.incident_queue.empty():
-                incident_id = self.incident_queue.get()
-                with self.lock:
-                    incident = self.active_incidents[incident_id]
-                if incident:
-                    self.dispatch_vehicles(incident)
-            self.dispatch_event.clear()
+                priority, incident_id = self.incident_queue.get()
+                updated_incidents.append((priority + 1, incident_id))  # Increase priority
 
-    def handle_incident(self, incident):
-        if incident.incident_type == "crime":
-            dispatched = self.dispatch_vehicles(self.police_cars, incident, 
-                                                self.determine_number_of_vehicles_needed(incident.incident_type), 
-                                                self.police_incidents_lock)
-        elif incident.incident_type == "fire":
-            dispatched = self.dispatch_vehicles(self.firetrucks, incident, 
-                                                self.determine_number_of_vehicles_needed(incident.incident_type), 
-                                                self.fire_incidents_lock)
+            # Put the updated incidents back in the queue
+            for incident in updated_incidents:
+                self.incident_queue.put(incident)
 
-        # Monitor incident status
-        while not incident.resolved:
-            with self.incident_queue_lock:
-                if incident.missing_resources and any(v.available and v.at_home_location for v in self.police_cars + self.firetrucks):
-                    # Dispatch additional vehicles as they become available
-                    self.dispatch_additional_vehicles(incident)
-            time.sleep(1)  # Check the status periodically
 
-        # Once resolved, reset vehicle status
-        self.reset_vehicle_status(incident)
+    def report_incident(self, incident_location):
+        # Now I will set the type of incident
+        incidents = INCIDENTS
+        incident_types = list(incidents.keys())
+        probabilities = [incidents[incident]['probability'] for incident in incident_types]
+
+        incident_type = random.choices(incident_types, weights=probabilities, k=1)[0]
+        id = len(self.active_incidents)
+        reported = time.time()
+        incident = Incident(id, incident_location, incident_type, reported, incidents[incident_type]['hardness'])
+        incident_priority = self.determine_incident_priority(incident_type, incident)
+        print(f"New incident reported at {incident_location} with type {incident_type} and priority {incident_priority}")
+
+        with self.lock:
+            self.active_incidents[id] = incident
+            self.incident_queue.put((incident_priority, incident.id))
+
+            
+    def determine_incident_priority(self, incident_type, incident):
+        incident_details = INCIDENTS.get(incident_type, {})
+
+        # Get hardness and required resources for the incident
+        hardness = incident_details.get('hardness', 0)
+        required_police_cars = incident_details.get('required_police_cars', 0)
+        required_firetrucks = incident_details.get('required_firetrucks', 0)
+        required_ambulances = incident_details.get('required_ambulances', 0)
+        incident.vehicles_needed = [required_police_cars, required_firetrucks, required_ambulances]
+
+        # Calculate the number of available vehicles
+        available_police_cars = sum(1 for car in self.police_cars if car.available)
+        available_firetrucks = sum(1 for truck in self.firetrucks if truck.available)
+        available_ambulances = sum(1 for ambulance in self.ambulances if ambulance.available)
+
+        # Adjust priority based on availability of resources
+        # If fewer vehicles are available than required, the priority increases
+        priority_adjustment = 0
+        if available_police_cars < required_police_cars:
+            priority_adjustment += (required_police_cars - available_police_cars) * 10
+        if available_firetrucks < required_firetrucks:
+            priority_adjustment += (required_firetrucks - available_firetrucks) * 10
+        if available_ambulances < required_ambulances:
+            priority_adjustment += (required_ambulances - available_ambulances) * 10
+
+        # Final priority calculation
+        priority = 100 - hardness + priority_adjustment
+
+        return priority
 
     def dispatch_vehicles(self, incident):
-        # Determine the type of vehicles needed based on the incident type
-        vehicles = self.police_cars if incident.incident_type == "crime" else self.firetrucks
-        num_vehicles_needed = self.determine_number_of_vehicles_needed(incident.incident_type)
-        incident_threads = []
-        with self.lock:
-            available_vehicles = [v for v in vehicles if v.available]
+        # determine the number of vehicles needed for the incident
+        needed_police_cars = incident.vehicles_needed[0]
+        needed_firetrucks = incident.vehicles_needed[1]
+        needed_ambulances = incident.vehicles_needed[2]
 
-        for i in range(min(num_vehicles_needed, len(available_vehicles))):
-            vehicle = available_vehicles[i]
-            with vehicle.lock:
-                vehicle.available = False  # Mark the vehicle as unavailable
-                vehicle.at_home_location = False
-                print(f"Dispatching {vehicle} to incident at {incident.location}")
-                vehicle.set_route(incident.location)
+        # dispatch vehicles
+        dispatched_police_cars = 0
+        dispatched_firetrucks = 0
+        dispatched_ambulances = 0
 
-            # Start attend_incident in a new thread to avoid blocking
-            incident_thread = threading.Thread(target=vehicle.attend_incident, args=(incident,))
-            incident_thread.start()
-            time.sleep(0.2)  # Wait between dispatching vehicles
+        # dispatch police cars
+        for car in self.police_cars:
+            car.lock.acquire()
+            if car.available and dispatched_police_cars < needed_police_cars:
+                car.attend_incident(incident)
+                dispatched_police_cars += 1
+            car.lock.release()
 
-        
-        for incident_thread in incident_threads:
-             incident_thread.join()
+        # dispatch firetrucks
+        for truck in self.firetrucks:
+            truck.lock.acquire()
+            if truck.available and dispatched_firetrucks < needed_firetrucks:
+                truck.attend_incident(incident)
+                dispatched_firetrucks += 1
+            truck.lock.release()
 
-        # Wait until incident status is set as resolved
-        while not incident.resolved:
-            time.sleep(1)
+        # dispatch ambulances
+        for ambulance in self.ambulances:
+            ambulance.lock.acquire()
+            if ambulance.available and dispatched_ambulances < needed_ambulances:
+                ambulance.attend_incident(incident)
+                dispatched_ambulances += 1
+            ambulance.lock.release()
 
-        # Pop the incident from the active incidents dictionary
-        with self.lock:
-            self.active_incidents.pop(incident.id)
-    
+        # update incident status
+        incident.status = "dispatched"
+        incident.vehicles_dispatched = [dispatched_police_cars, dispatched_firetrucks, dispatched_ambulances]
+        incident.vehicles_needed = [needed_police_cars - dispatched_police_cars, needed_firetrucks - dispatched_firetrucks, needed_ambulances - dispatched_ambulances]
 
-    def dispatch_additional_vehicles(self, incident):
-    # If the incident is not resolved and missing resources
-
-        if not incident.resolved and incident.missing_resources > 0:
-            # Determine the type of vehicles needed based on the incident type
-            vehicles = self.police_cars if incident.incident_type == "crime" else self.firetrucks
-
-            with self.police_incidents_lock if incident.incident_type == "crime" else self.fire_incidents_lock:
-                # Filter available and at home vehicles
-                available_vehicles = [v for v in vehicles if v.available and v.at_home_location]
-                
-                # Dispatch up to the number of missing resources
-                for i in range(min(incident.missing_resources, len(available_vehicles))):
-                    vehicle = available_vehicles[i]
-                    vehicle.set_route(incident.location)
-                    vehicle.available = False
-                    vehicle.set_at_home_location(False)
-                    vehicle.start()
-                    incident.missing_resources -= 1  # Update missing resources
-
-    def reset_vehicle_status(self, incident):
-        # Identify the vehicles that were dispatched to this incident
-        vehicles = self.police_cars if incident.incident_type == "crime" else self.firetrucks
-        
-        for vehicle in vehicles:
-            # Reset the vehicle status if it was part of this incident
-            if not vehicle.available and not vehicle.at_home_location:
-                vehicle.available(True)
-                vehicle.at_home_location(True)
-                # Additional logic can be added here if vehicles need to take time to return to the station
-
-    def determine_number_of_vehicles_needed(self, incident_type):
-        return {
-            "fire": random.randint(1, 1),  # Randomly choose between 1 and 3 firetrucks
-            "crime": random.randint(1, 1)  # Randomly choose between 1 and 2 police cars
-        }.get(incident_type, 1)
-
-    def order_secondary_help(self):
-        # Handle secondary help in a similar way to the primary help
-        if self.to_sort.secondary_help == "fire":
-            self.dispatch_vehicles(self.police_cars, self.to_sort, 1, self.police_incidents_lock)
-        elif self.to_sort.secondary_help == "crime":
-            self.dispatch_vehicles(self.firetrucks, self.to_sort, 1, self.fire_incidents_lock)
+        print(f"Dispatched {dispatched_police_cars} police cars, {dispatched_firetrucks} firetrucks, and {dispatched_ambulances} ambulances to incident {incident.id}")
