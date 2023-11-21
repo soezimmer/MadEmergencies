@@ -23,6 +23,7 @@ class MovingObject(threading.Thread):
         self.route_index = 0
         
     def move(self):
+        print(f"{self.id} moving from {self.current_node} to {self.target_node}")
         while self.route_index < len(self.route):
             with self.lock:
                 self.current_node = self.route[self.route_index]
