@@ -1,13 +1,14 @@
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from services.city import City  
+from services.city import City
 import osmnx as ox
 from utils.constants import NORTH, SOUTH, EAST, WEST
-
+import numpy as np
 
 class Simulation:
     def __init__(self, city):
         self.city = city
+        self.graph = city.graph  # Assuming City class has a 'graph' attribute
         self.fig, self.ax = None, None
         self.citizen_scatter = None
         self.incident_scatter = None
@@ -40,10 +41,10 @@ class Simulation:
 
     def refresh_map(self, frame):
         # We need to define how to get current locations of citizens, incidents, and emergency vehicles
-        citizen_nodes = [citizen.current_node for citizen in self.citizens]
-        police_nodes = [police.current_node for police in self.police_onsite]
-        firetruck_nodes = [firetruck.current_node for firetruck in self.firetrucks_onsite]
-        incident_nodes = [incident.location for incident in self.emergency_response.active_incidents.values()]
+        citizen_nodes = [citizen.current_node for citizen in self.city.citizens]
+        police_nodes = [police.current_node for police in self.city.police_onsite]
+        firetruck_nodes = [firetruck.current_node for firetruck in self.city.firetrucks_onsite]
+        incident_nodes = [incident.location for incident in self.city.emergency_response.active_incidents.values()]
 
         # Get coordinates for each group
         citizen_coords = [[self.graph.nodes[node]['x'], self.graph.nodes[node]['y']] for node in citizen_nodes]
@@ -63,7 +64,6 @@ class Simulation:
         return self.citizen_scatter, self.incident_scatter, self.police_scatter, self.firetruck_scatter
 
     def run(self):
-        print("Starting simulation")
         self.city.start_services()
         self.plot_map()
         self.anim = FuncAnimation(self.fig, self.refresh_map, interval=200, blit=True)

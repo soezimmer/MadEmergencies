@@ -14,8 +14,9 @@ class EmergencyVehicle(MovingObject):
         self.home_location = None
 
     def attend_incident(self, incident):
+        self.incident = incident
         self.set_route(incident.location)
-        super().run()
+        super().move()
         print(f"{self.vehicle_type} {self.id} arrived at incident at {incident.location}")
         while not incident.resolved:
             with incident.lock:
@@ -26,7 +27,7 @@ class EmergencyVehicle(MovingObject):
                     incident.resolved = True    
                 print(f"{self.vehicle_type} {self.id} resolved incident at {incident.location}")
         self.set_route(self.home_location)
-        super().run()
+        super().move()
         print(f"{self.vehicle_type} {self.id} returned to station")
         self.at_home_location = True
         self.available = True

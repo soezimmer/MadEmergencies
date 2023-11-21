@@ -21,16 +21,11 @@ class MovingObject(threading.Thread):
         self.target_node = target_node
         self.route = ox.shortest_path(self.graph, self.current_node, self.target_node, weight=weight)
         self.route_index = 0
-
+        
     def move(self):
-        while self.route and self.route_index < len(self.route) - 1:
-            self.current_node = self.route[self.route_index]
-            self.route_index += 1
-            self.position = (self.graph.nodes[self.current_node]['x'], self.graph.nodes[self.current_node]['y'])
-            return True
-        else:
-            return False 
-
-    def run(self):
-        while self.move():
-            time.sleep(0.2)  # Wait between nodes
+        while self.route_index < len(self.route):
+            with self.lock:
+                self.current_node = self.route[self.route_index]
+                self.route_index += 1
+            print(f"{self.id} moved from {self.route[self.route_index - 1]} to {self.current_node}")
+            time.sleep(0.2)

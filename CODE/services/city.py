@@ -4,6 +4,7 @@ from models.citizen import Citizen
 from models.emergency_vehicle import EmergencyVehicle
 from utils.constants import *
 from services.emergency_response_center import EmergencyResponseCenter
+import time
 
 
 class City:
@@ -22,8 +23,10 @@ class City:
 
     def deploy_citizens(self):
         for i in range(self.citizens_number):
-            self.citizens.append(Citizen(i, self.graph, self.emergency_response))
-            self.citizens[i].start()
+            citizen = Citizen(i, self.graph, self.emergency_response)
+            self.citizens.append(citizen)
+            citizen.start()
+
 
     def deploy_emergency_services(self):
         # First, initialize the lists for firetrucks and police cars
@@ -47,4 +50,5 @@ class City:
 
     def start_services(self):
         self.deploy_emergency_services()
+        time.sleep(5)
         self.deploy_citizens()
