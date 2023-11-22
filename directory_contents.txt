@@ -69,7 +69,6 @@ CODE/
                 return self.citizen_scatter, self.incident_scatter, self.police_scatter, self.firetruck_scatter
         
             def run(self):
-                print("Starting simulation")
                 self.city.start_services()
                 self.plot_map()
                 self.anim = FuncAnimation(self.fig, self.refresh_map, interval=200, blit=True)
@@ -89,7 +88,7 @@ CODE/
             simulation.run()  # Run the simulation
         
         if __name__ == '__main__':
-            main()
+            main() 
 
     utils/
         ├── constants.py
@@ -266,8 +265,9 @@ Failed to read constants.cpython-310.pyc: 'utf-8' codec can't decode byte 0xd3 i
                     self.home_location = None
             
                 def attend_incident(self, incident):
+                    self.incident = incident
                     self.set_route(incident.location)
-                    super().run()
+                    super().move()
                     print(f"{self.vehicle_type} {self.id} arrived at incident at {incident.location}")
                     while not incident.resolved:
                         with incident.lock:
@@ -278,7 +278,7 @@ Failed to read constants.cpython-310.pyc: 'utf-8' codec can't decode byte 0xd3 i
                                 incident.resolved = True    
                             print(f"{self.vehicle_type} {self.id} resolved incident at {incident.location}")
                     self.set_route(self.home_location)
-                    super().run()
+                    super().move()
                     print(f"{self.vehicle_type} {self.id} returned to station")
                     self.at_home_location = True
                     self.available = True
@@ -355,19 +355,15 @@ Failed to read constants.cpython-310.pyc: 'utf-8' codec can't decode byte 0xd3 i
                     self.target_node = target_node
                     self.route = ox.shortest_path(self.graph, self.current_node, self.target_node, weight=weight)
                     self.route_index = 0
-            
+                    
                 def move(self):
-                    while self.route and self.route_index < len(self.route) - 1:
-                        self.current_node = self.route[self.route_index]
-                        self.route_index += 1
-                        self.position = (self.graph.nodes[self.current_node]['x'], self.graph.nodes[self.current_node]['y'])
-                        return True
-                    else:
-                        return False 
-            
-                def run(self):
-                    while self.move():
-                        time.sleep(0.2)  # Wait between nodes
+                    print(f"{self.id} moving from {self.current_node} to {self.target_node}")
+                    while self.route_index < len(self.route):
+                        with self.lock:
+                            self.current_node = self.route[self.route_index]
+                            self.route_index += 1
+                        print(f"{self.id} moved from {self.route[self.route_index - 1]} to {self.current_node}")
+                        time.sleep(0.2)
 
         __pycache__/
             ├── police_car.cpython-310.pyc
@@ -380,7 +376,7 @@ Failed to read fire_truck.cpython-310.pyc: 'utf-8' codec can't decode byte 0x86 
 
             ├── moving_object.cpython-310.pyc
                 -------------- CODE OF moving_object.cpython-310.pyc --------------
-Failed to read moving_object.cpython-310.pyc: 'utf-8' codec can't decode byte 0xcc in position 12: invalid continuation byte
+Failed to read moving_object.cpython-310.pyc: 'utf-8' codec can't decode byte 0x9a in position 8: invalid start byte
 
             ├── incident.cpython-310.pyc
                 -------------- CODE OF incident.cpython-310.pyc --------------
@@ -388,7 +384,7 @@ Failed to read incident.cpython-310.pyc: 'utf-8' codec can't decode byte 0xb1 in
 
             ├── emergency_vehicle.cpython-310.pyc
                 -------------- CODE OF emergency_vehicle.cpython-310.pyc --------------
-Failed to read emergency_vehicle.cpython-310.pyc: 'utf-8' codec can't decode byte 0xe8 in position 12: invalid continuation byte
+Failed to read emergency_vehicle.cpython-310.pyc: 'utf-8' codec can't decode byte 0xe3 in position 16: invalid continuation byte
 
             ├── citizen.cpython-310.pyc
                 -------------- CODE OF citizen.cpython-310.pyc --------------
@@ -397,7 +393,7 @@ Failed to read citizen.cpython-310.pyc: 'utf-8' codec can't decode byte 0xe3 in 
     __pycache__/
         ├── simulation.cpython-310.pyc
             -------------- CODE OF simulation.cpython-310.pyc --------------
-Failed to read simulation.cpython-310.pyc: 'utf-8' codec can't decode byte 0xe3 in position 16: invalid continuation byte
+Failed to read simulation.cpython-310.pyc: 'utf-8' codec can't decode byte 0xe7 in position 8: invalid continuation byte
 
     services/
         ├── city.py
@@ -408,6 +404,7 @@ Failed to read simulation.cpython-310.pyc: 'utf-8' codec can't decode byte 0xe3 
             from models.emergency_vehicle import EmergencyVehicle
             from utils.constants import *
             from services.emergency_response_center import EmergencyResponseCenter
+            import time
             
             
             class City:
@@ -426,8 +423,10 @@ Failed to read simulation.cpython-310.pyc: 'utf-8' codec can't decode byte 0xe3 
             
                 def deploy_citizens(self):
                     for i in range(self.citizens_number):
-                        self.citizens.append(Citizen(i, self.graph, self.emergency_response))
-                        self.citizens[i].start()
+                        citizen = Citizen(i, self.graph, self.emergency_response)
+                        self.citizens.append(citizen)
+                        citizen.start()
+            
             
                 def deploy_emergency_services(self):
                     # First, initialize the lists for firetrucks and police cars
@@ -451,6 +450,7 @@ Failed to read simulation.cpython-310.pyc: 'utf-8' codec can't decode byte 0xe3 
             
                 def start_services(self):
                     self.deploy_emergency_services()
+                    time.sleep(5)
                     self.deploy_citizens()
 
         ├── emergency_response_center.py
