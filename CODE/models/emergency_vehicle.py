@@ -13,16 +13,16 @@ class EmergencyVehicle(MovingObject):
         self.available = True
         self.at_home_location = True
         self.home_location = home_location
+        self.done = False
 
     def attend_incident(self):
         self.available = False
-        logging.info(f"{self.vehicle_type} {self.id} is attending incident {self.incident.id}")
+        #logging.info(f"{self.vehicle_type} {self.id} is attending incident {self.incident.id}")
         self.set_route(self.incident.location)
-        super().move()
         self.at_home_location = False
-        while self.current_node != self.incident.location:
+        while self.move():
             time.sleep(0.1)
-        print(f"{self.vehicle_type} {self.id} arrived at incident at {self.incident.location}")
+        #logging.info(f"{self.vehicle_type} {self.id} arrived at incident at {self.incident.location}")
         while not self.incident.resolved:
             with self.incident.lock:
                 self.incident.hardness -= 3
@@ -31,19 +31,18 @@ class EmergencyVehicle(MovingObject):
                 with self.incident.lock:
                     self.incident.resolved = True
                     self.incident.status = "resolved"    
-                logging.info(f"{self.vehicle_type} {self.id} resolved incident at {self.incident.location}")
+                #logging.info(f"{self.vehicle_type} {self.id} resolved incident at {self.incident.location}")
         self.target_node = self.home_location
-        self.set_route(self.home_location)
-        super().move()
-        while self.current_node != self.home_location:
+        self.route = self.set_route(self.home_location)
+        while self.move():
             time.sleep(0.1)
-        print(f"{self.vehicle_type} {self.id} returned to station")
+        #logging.info(f"{self.vehicle_type} {self.id} returned to station")
         self.at_home_location = True
         self.available = True
         self.incident = None
 
     def run(self):
-        while True:
+        while not self.done:
             if self.incident and not self.available:
                 self.attend_incident()
                 # Wait to be available again
