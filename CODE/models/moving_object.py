@@ -24,7 +24,7 @@ class MovingObject(threading.Thread):
         self.route_index = 0
         
     def move(self):
-        if not self.route:
+        if self.route == [] or None:
             if self.target_node != self.current_node and self.target_node:
                 self.set_route(self.target_node)
             else:
@@ -36,5 +36,4 @@ class MovingObject(threading.Thread):
             with self.lock:
                 self.current_node = self.route[self.route_index]
                 self.route_index += 1
-            print(f"{self.id} moved from {self.route[self.route_index - 1]} to {self.current_node}")
             time.sleep(0.2)

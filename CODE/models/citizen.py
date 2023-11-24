@@ -17,6 +17,6 @@ class Citizen(MovingObject):
 
     def run(self):
         while self.num_incidents_reported < 3:
-            if random.random() < 0.2:
+            if random.random() < 0.15:
                 self.report_incident()
             time.sleep(10)

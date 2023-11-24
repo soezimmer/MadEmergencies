@@ -24,28 +24,54 @@ class EmergencyResponseCenter(threading.Thread):
             self.firetrucks = firetrucks
             self.police_cars = police_cars
             self.ambulances = ambulances
+            self.incident_id_counter = 0
             self.active_incidents = {}
-            self.lock = threading.RLock()
-            print("Emergency Response Center activated")
+            self.resolved_incidents = {}
+            self.locks = {
+                            "active_incidents": threading.RLock(),
+                            "resolved_incidents": threading.RLock(),
+                            "incident_queue": threading.RLock()
+                        }
             self._instance = self
     
     def run(self):
+        logging.info("Emergency Response Center activated")
         self.queue_listener()
 
 
     def queue_listener(self):
         while True:
             if not self.incident_queue.empty():
-                priority, incident_id = self.incident_queue.get()
-                print(f"The queue is: {self.incident_queue.queue}")
-                incident = self.active_incidents[incident_id]
+                logging.info(f"The queue is: {self.incident_queue.queue}")
+                logging.info(f"The active incidents are: {self.active_incidents}")
+                with self.locks['incident_queue']:
+                    priority, incident_id = self.incident_queue.get()
+                with self.locks['active_incidents']:
+                    incident = self.active_incidents[incident_id]
                 print(f"Dispatching incident {incident.id} with priority {priority}")
-                if incident and incident.vehicles_needed != []:
-                    threading.Thread(target=self.dispatch_vehicles, args=(incident, priority)).start()
-            time.sleep(0.1)
+                self.dispatch_vehicles(incident, priority)
+
+                with self.locks['active_incidents']:
+                    incidents_to_remove = []
+                    for incident_id, incident in self.active_incidents.items():
+                        if incident.resolved:
+                            incidents_to_remove.append(incident_id)
+                            self.resolved_incidents[incident_id] = incident
+                            logging.info(f"Resolved incident {incident_id} and removed it from active incidents")
+                    # Remove the resolved incidents from active_incidents
+                    for incident_id in incidents_to_remove:
+                        self.active_incidents.pop(incident_id)
+                        with self.locks['incident_queue']:
+                            if (priority, incident_id) in self.incident_queue.queue:
+                                self.incident_queue.queue.remove((priority, incident_id))
+                                logging.info(f"Removed incident {incident_id} from incident queue as it is resolved")
+
+            time.sleep(0.05)
+
+
 
     def update_priorities(self):
-        with self.lock:
+        with self.locks['incident_queue']:
             # Temporarily store updated incidents to put them back in the queue
             updated_incidents = []
             while not self.incident_queue.empty():
@@ -64,13 +90,14 @@ class EmergencyResponseCenter(threading.Thread):
         probabilities = [incidents[incident]['probability'] for incident in incident_types]
 
         incident_type = random.choices(incident_types, weights=probabilities, k=1)[0]
-        id = len(self.active_incidents)
+        self.incident_id_counter += 1
+        id = self.incident_id_counter
         reported = time.time()
         incident = Incident(id, incident_location, incident_type, reported, incidents[incident_type]['hardness'])
         incident_priority = self.determine_incident_priority(incident_type, incident)
-        print(f"New incident reported at {incident_location} with type {incident_type} and priority {incident_priority}")
+        logging.info(f"New incident {incident.id}  reported at {incident_location} with type {incident_type}, hardness {incident.hardness}, and priority {incident_priority} \n Firetrucks needed: {incident.vehicles_needed[1]} \n Police cars needed: {incident.vehicles_needed[0]} \n Ambulances needed: {incident.vehicles_needed[2]}")
 
-        with self.lock:
+        with self.locks['active_incidents']:
             self.active_incidents[id] = incident
             self.incident_queue.put((incident_priority, incident.id))
 
@@ -120,10 +147,11 @@ class EmergencyResponseCenter(threading.Thread):
         if dispatched_police_cars < needed_police_cars or dispatched_firetrucks < needed_firetrucks or dispatched_ambulances < needed_ambulances:
             # Not all vehicles were dispatched, update incident status and re-queue
             incident.status = "pending"
-            updated_priority = priority - 5
-            with self.lock:
-                self.incident_queue.put((updated_priority, incident.id))
-            print(f"Re-queued incident {incident.id} with updated priority {updated_priority}")
+            if priority > 1:
+                priority = priority - 1
+            with self.locks['incident_queue']:
+                self.incident_queue.put((priority, incident.id))
+            print(f"Re-queued incident {incident.id} with updated priority {priority}")
         else:
             # All required vehicles dispatched
             incident.status = "dispatched"

@@ -13,7 +13,6 @@ class Incident:
         self.vehicles_dispatched = []
         self.vehicles_needed = []
         self.lock = threading.Lock()
-        print(f"Incident of type {self.incident_type} initiated at {self.location}")
 
     def __str__(self):
         return f"ID: {self.id}, Location: {self.location}, Type: {self.incident_type}, Status: {self.status}"
