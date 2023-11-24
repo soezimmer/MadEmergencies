@@ -5,3 +5,4 @@ scratch/
 directory_contents.txt
 *.pyc
 */__pycache__/
+*/*/__pycache__/
