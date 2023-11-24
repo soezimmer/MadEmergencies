@@ -1,6 +1,7 @@
 import threading
 import time
 import osmnx as ox
+import logging
 
 class MovingObject(threading.Thread):
     def __init__(self, id, graph, start_node, route=None):
@@ -23,7 +24,14 @@ class MovingObject(threading.Thread):
         self.route_index = 0
         
     def move(self):
-        print(f"{self.id} moving from {self.current_node} to {self.target_node}")
+        if not self.route:
+            if self.target_node != self.current_node and self.target_node:
+                self.set_route(self.target_node)
+            else:
+                logging.error(f"{self.id} has no route")
+                logging.error(f"{self.id} is at {self.current_node}")
+                return
+
         while self.route_index < len(self.route):
             with self.lock:
                 self.current_node = self.route[self.route_index]

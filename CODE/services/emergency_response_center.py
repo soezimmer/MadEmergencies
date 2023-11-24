@@ -4,6 +4,7 @@ import time
 import random
 from models.incident import Incident
 from utils.constants import INCIDENTS
+import logging
 
 class EmergencyResponseCenter(threading.Thread):
     _instance = None
@@ -40,7 +41,7 @@ class EmergencyResponseCenter(threading.Thread):
                 incident = self.active_incidents[incident_id]
                 print(f"Dispatching incident {incident.id} with priority {priority}")
                 if incident and incident.vehicles_needed != []:
-                    threading.Thread(target=self.dispatch_vehicles, args=(incident,)).start()
+                    threading.Thread(target=self.dispatch_vehicles, args=(incident, priority)).start()
             time.sleep(0.1)
 
     def update_priorities(self):
@@ -104,44 +105,38 @@ class EmergencyResponseCenter(threading.Thread):
 
         return priority
 
-    def dispatch_vehicles(self, incident):
+    def dispatch_vehicles(self, incident, priority):
         # determine the number of vehicles needed for the incident
         needed_police_cars = incident.vehicles_needed[0]
         needed_firetrucks = incident.vehicles_needed[1]
         needed_ambulances = incident.vehicles_needed[2]
 
-        # dispatch vehicles
-        dispatched_police_cars = 0
-        dispatched_firetrucks = 0
-        dispatched_ambulances = 0
+        # Attempt to dispatch vehicles
+        dispatched_police_cars = self.dispatch_specific_vehicle(self.police_cars, needed_police_cars, incident)
+        dispatched_firetrucks = self.dispatch_specific_vehicle(self.firetrucks, needed_firetrucks, incident)
+        dispatched_ambulances = self.dispatch_specific_vehicle(self.ambulances, needed_ambulances, incident)
 
-        # dispatch police cars
-        for car in self.police_cars:
-            car.lock.acquire()
-            if car.available and dispatched_police_cars < needed_police_cars:
-                car.attend_incident(incident)
-                dispatched_police_cars += 1
-            car.lock.release()
+        # Check if all required vehicles were dispatched
+        if dispatched_police_cars < needed_police_cars or dispatched_firetrucks < needed_firetrucks or dispatched_ambulances < needed_ambulances:
+            # Not all vehicles were dispatched, update incident status and re-queue
+            incident.status = "pending"
+            updated_priority = priority - 5
+            with self.lock:
+                self.incident_queue.put((updated_priority, incident.id))
+            print(f"Re-queued incident {incident.id} with updated priority {updated_priority}")
+        else:
+            # All required vehicles dispatched
+            incident.status = "dispatched"
+            incident.vehicles_dispatched = [dispatched_police_cars, dispatched_firetrucks, dispatched_ambulances]
+            incident.vehicles_needed = [needed_police_cars - dispatched_police_cars, needed_firetrucks - dispatched_firetrucks, needed_ambulances - dispatched_ambulances]
+            print(f"Dispatched {dispatched_police_cars} police cars, {dispatched_firetrucks} firetrucks, and {dispatched_ambulances} ambulances to incident {incident.id}")
 
-        # dispatch firetrucks
-        for truck in self.firetrucks:
-            truck.lock.acquire()
-            if truck.available and dispatched_firetrucks < needed_firetrucks:
-                truck.attend_incident(incident)
-                dispatched_firetrucks += 1
-            truck.lock.release()
-
-        # dispatch ambulances
-        for ambulance in self.ambulances:
-            ambulance.lock.acquire()
-            if ambulance.available and dispatched_ambulances < needed_ambulances:
-                ambulance.attend_incident(incident)
-                dispatched_ambulances += 1
-            ambulance.lock.release()
-
-        # update incident status
-        incident.status = "dispatched"
-        incident.vehicles_dispatched = [dispatched_police_cars, dispatched_firetrucks, dispatched_ambulances]
-        incident.vehicles_needed = [needed_police_cars - dispatched_police_cars, needed_firetrucks - dispatched_firetrucks, needed_ambulances - dispatched_ambulances]
-
-        print(f"Dispatched {dispatched_police_cars} police cars, {dispatched_firetrucks} firetrucks, and {dispatched_ambulances} ambulances to incident {incident.id}")
+    def dispatch_specific_vehicle(self, vehicles, needed, incident):
+        dispatched_count = 0
+        for vehicle in vehicles:
+            with vehicle.lock:
+                if vehicle.available and dispatched_count < needed:
+                    vehicle.incident = incident
+                    vehicle.available = False
+                    dispatched_count += 1
+        return dispatched_count
