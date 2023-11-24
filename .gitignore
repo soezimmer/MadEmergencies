@@ -3,3 +3,5 @@ scratch/
 .venv/
 .DS_Store
 directory_contents.txt
+*.pyc
+*/__pycache__/
