@@ -10,9 +10,9 @@ class EmergencyResponseCenter(threading.Thread):
     _instance = None
 
     @classmethod
-    def getInstance(cls, firetrucks=None, police_cars=None, ambulances=None):
+    def getInstance(cls, firetrucks=None, police_cars=None, ambulances=None, city=None):
         if cls._instance is None:
-            cls._instance = cls(firetrucks, police_cars, ambulances)
+            cls._instance = cls(firetrucks, police_cars, ambulances, city)
         return cls._instance
 
     def __init__(self, firetrucks, police_cars, ambulances, city):
