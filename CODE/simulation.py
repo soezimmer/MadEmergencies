@@ -84,6 +84,7 @@ class Simulation:
         self.ambulance_scatter.set_offsets(ambulance_coords)
         self.incident_scatter.set_offsets(incident_coords)
         self.update_texts()
+        self.ax.legend()
 
         # We need to return a tuple of "artists" that have been changed
         return self.citizen_scatter, self.incident_scatter, self.police_scatter, self.firetruck_scatter, self.ambulance_scatter, self.active_incidents_text, self.queue_text
@@ -91,7 +92,7 @@ class Simulation:
     def update_texts(self):
         # Update text for active incidents
         active_incidents = self.city.emergency_response.active_incidents
-        active_incidents_info = "\n".join([f"Incident {id} - {incident.incident_type} - Severity {incident.hardness}"
+        active_incidents_info = "\n".join([f"Incident {id} - {incident.incident_type} - Severity {round(incident.severity,2)}"
                                           for id, incident in active_incidents.items()])
         self.active_incidents_text.set_text(active_incidents_info)
 
