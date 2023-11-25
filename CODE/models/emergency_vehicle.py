@@ -25,9 +25,9 @@ class EmergencyVehicle(MovingObject):
         #logging.info(f"{self.vehicle_type} {self.id} arrived at incident at {self.incident.location}")
         while not self.incident.resolved:
             with self.incident.lock:
-                self.incident.hardness -= 3
+                self.incident.severity -= 3
             time.sleep(1)
-            if self.incident.hardness <= 0:
+            if self.incident.severity <= 0:
                 with self.incident.lock:
                     self.incident.resolved = True
                     self.incident.status = "resolved"    

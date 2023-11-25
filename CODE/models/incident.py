@@ -1,13 +1,12 @@
 import threading
 
 class Incident:
-    def __init__(self, id, osmid, incident_type, time, hardness):
-        # Define properties of incident
+    def __init__(self, id, osmid, incident_type, time, severity):
         self.id = id
         self.location = osmid
         self.incident_type = incident_type
         self.report_time = time
-        self.hardness = hardness
+        self.severity = severity
         self.status = "reported"
         self.resolved = False
         self.vehicles_dispatched = []

@@ -104,9 +104,9 @@ class EmergencyResponseCenter(threading.Thread):
         self.incident_id_counter += 1
         id = self.incident_id_counter
         reported = time.time()
-        incident = Incident(id, incident_location, incident_type, reported, incidents[incident_type]['hardness'])
+        incident = Incident(id, incident_location, incident_type, reported, incidents[incident_type]['severity'])
         incident_priority = self.determine_incident_priority(incident_type, incident)
-        logging.info(f"New incident {incident.id}  reported at {incident_location} with type {incident_type}, hardness {incident.hardness}, and priority {incident_priority} \n Firetrucks needed: {incident.vehicles_needed[1]} \n Police cars needed: {incident.vehicles_needed[0]} \n Ambulances needed: {incident.vehicles_needed[2]}")
+        logging.info(f"New incident {incident.id}  reported at {incident_location} with type {incident_type}, severity {incident.severity}, and priority {incident_priority} \n Firetrucks needed: {incident.vehicles_needed[1]} \n Police cars needed: {incident.vehicles_needed[0]} \n Ambulances needed: {incident.vehicles_needed[2]}")
 
         with self.locks["logged_incidents"]:
             self.logged_incidents[incident.id] = incident
@@ -117,8 +117,8 @@ class EmergencyResponseCenter(threading.Thread):
     def determine_incident_priority(self, incident_type, incident):
         incident_details = INCIDENTS.get(incident_type, {})
 
-        # Get hardness and required resources for the incident
-        hardness = incident_details.get('hardness', 0)
+        # Get severity and required resources for the incident
+        severity = incident_details.get('severity', 0)
         required_police_cars = incident_details.get('required_police_cars', 0)
         required_firetrucks = incident_details.get('required_firetrucks', 0)
         required_ambulances = incident_details.get('required_ambulances', 0)
@@ -140,7 +140,7 @@ class EmergencyResponseCenter(threading.Thread):
             priority_adjustment -= (required_ambulances - available_ambulances) * 10
 
         # Final priority calculation
-        priority = 100 - hardness + priority_adjustment
+        priority = 100 - severity + priority_adjustment
         return priority
 
     def dispatch_vehicles(self, incident, priority):
