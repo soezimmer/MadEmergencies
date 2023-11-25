@@ -25,10 +25,16 @@ class MovingObject(threading.Thread):
         return self.route
         
     def move(self):
-        while self.route and self.route_index < len(self.route) - 1:
+        if self.route and self.route_index < len(self.route):
             self.current_node = self.route[self.route_index]
             self.route_index += 1
             self.position = (self.graph.nodes[self.current_node]['x'], self.graph.nodes[self.current_node]['y'])
             return True
         else:
             return False  
+        
+    def determine_sleep_time(self):
+        if self.route_index == 0 or self.route_index == len(self.route):
+            return 0.1
+        time_to_sleep = self.graph.edges[self.route[self.route_index - 1], self.route[self.route_index], 0]['length'] / 1000
+        return time_to_sleep
