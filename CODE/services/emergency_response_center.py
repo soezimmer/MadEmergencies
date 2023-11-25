@@ -5,6 +5,7 @@ import random
 from models.incident import Incident
 from utils.constants import INCIDENTS
 import logging
+from abc import ABC, abstractmethod
 
 class EmergencyResponseCenter(threading.Thread):
     _instance = None
@@ -12,7 +13,7 @@ class EmergencyResponseCenter(threading.Thread):
     @classmethod
     def getInstance(cls, firetrucks=None, police_cars=None, ambulances=None):
         if cls._instance is None:
-            cls._instance = cls(firetrucks, police_cars, ambulances)
+            cls._instance = cls(firetrucks, police_cars, ambulances, city)
         return cls._instance
 
     def __init__(self, firetrucks, police_cars, ambulances, city):
@@ -36,7 +37,7 @@ class EmergencyResponseCenter(threading.Thread):
                         }
             self._instance = self
             self.city = city
-    
+
     def run(self):
         logging.info("Emergency Response Center activated")
         while self.city.citizens == []:
@@ -47,35 +48,31 @@ class EmergencyResponseCenter(threading.Thread):
     def queue_listener(self):
         while self.city.citizens != [] or not self.active_incidents == {}:
             try:
-                if not self.incident_queue.empty():
-                    #logging.info(f"The queue is: {self.incident_queue.queue}")
-                    #logging.info(f"The active incidents are: {self.active_incidents}")
-                    with self.locks['incident_queue']:
-                        priority, incident_id = self.incident_queue.get()
-                    with self.locks['active_incidents'] and self.locks['logged_incidents']:
-                        incident = self.active_incidents[incident_id] if incident_id in self.active_incidents else self.logged_incidents[incident_id]
-                    #logging.info(f"Dispatching incident {incident.id} with priority {priority}")
-                    self.dispatch_vehicles(incident, priority)
+                # Process the first 5 highest priority incidents
+                for _ in range(5):
+                    if not self.incident_queue.empty():
+                        with self.locks['incident_queue']:
+                            priority, incident_id = self.incident_queue.get()
+                        with self.locks['active_incidents'], self.locks['logged_incidents']:
+                            incident = self.active_incidents.get(incident_id) or self.logged_incidents.get(incident_id)
+                        if incident:
+                            self.dispatch_vehicles(incident, priority)
+                    else:
+                        break  # Exit the loop if the queue is empty
+
+                # Rest of the queue processing remains the same
+                with self.locks['active_incidents']:
+                        to_remove = [incident_id for incident_id, incident in self.active_incidents.items() if incident.resolved]
+                for incident_id in to_remove:
+                    self.active_incidents.pop(incident_id, None)
+                    with self.locks['resolved_incidents']:
+                        self.resolved_incidents[incident_id] = incident
+
+                self.update_priorities()
+                time.sleep(0.1)
+
             except Exception as e:
                 logging.error(f"There was an ERROR: {e}")
-
-            with self.locks['active_incidents']:
-                incidents_to_remove = []
-                for incident_id, incident in self.active_incidents.items():
-                    if incident.resolved:
-                        incidents_to_remove.append(incident_id)
-                        self.resolved_incidents[incident_id] = incident
-                        #logging.info(f"Resolved incident {incident_id} and removed it from active incidents")
-                # Remove the resolved incidents from active_incidents
-                for incident_id in incidents_to_remove:
-                    self.active_incidents.pop(incident_id)
-                    with self.locks['incident_queue']:
-                        if (priority, incident_id) in self.incident_queue.queue:
-                            self.incident_queue.queue.remove((priority, incident_id))
-                            #logging.info(f"Removed incident {incident_id} from incident queue as it is resolved")
-
-            self.update_priorities()
-            time.sleep(0.1)
         
         logging.info("All citizens are done, shutting down Emergency Response Center")
         self.city.shutdown()
@@ -104,9 +101,11 @@ class EmergencyResponseCenter(threading.Thread):
         self.incident_id_counter += 1
         id = self.incident_id_counter
         reported = time.time()
-        incident = Incident(id, incident_location, incident_type, reported, incidents[incident_type]['severity'])
+        incident = Incident(id, incident_location, incident_type, reported, incidents[incident_type]['severity'], self.city)
+        incident.name = "Incident " + str(incident.id)
+        incident.start()
         incident_priority = self.determine_incident_priority(incident_type, incident)
-        logging.info(f"New incident {incident.id}  reported at {incident_location} with type {incident_type}, severity {incident.severity}, and priority {incident_priority} \n Firetrucks needed: {incident.vehicles_needed[1]} \n Police cars needed: {incident.vehicles_needed[0]} \n Ambulances needed: {incident.vehicles_needed[2]}")
+        logging.info(f"New incident {incident.id}  reported at {incident_location} with type {incident_type}, hardness {incident.hardness}, and priority {incident_priority} \n Firetrucks needed: {incident.vehicles_needed[1]} \n Police cars needed: {incident.vehicles_needed[0]} \n Ambulances needed: {incident.vehicles_needed[2]}")
 
         with self.locks["logged_incidents"]:
             self.logged_incidents[incident.id] = incident
@@ -158,29 +157,18 @@ class EmergencyResponseCenter(threading.Thread):
         incident.vehicles_needed = [needed_police_cars - dispatched_police_cars, needed_firetrucks - dispatched_firetrucks, needed_ambulances - dispatched_ambulances]
 
         if incident.vehicles_needed == [0, 0, 0]:
-            # Option 1: All cars dispatched
             incident.status = "dispatched"
-            #logging.info(f"All required vehicles dispatched to incident {incident.id}")
-            with self.locks['logged_incidents']:
-                self.logged_incidents[incident.id] = incident
             with self.locks['active_incidents']:
                 self.active_incidents[incident.id] = incident
-        elif incident.vehicles_dispatched != [0, 0, 0]:
-            # Option 2: Not enough cars dispatched
-            incident.status = "more vehicles needed"
-            priority = priority - 0.3 if priority > 0 else priority
-            with self.locks['incident_queue']:
-                self.incident_queue.put((priority, incident.id))
-            with self.locks['active_incidents']:
-                self.active_incidents[incident.id] = incident
-            #logging.info(f"Re-queued incident {incident.id} with updated priority {priority}")
         else:
-            # Option 3: No cars dispatched
-            incident.status = "no vehicles available"
-            priority = priority - 5 if priority > 0 else priority
             with self.locks['incident_queue']:
                 self.incident_queue.put((priority, incident.id))
-            #logging.info(f"Re-queued incident {incident.id} with significantly increased priority {priority}")
+            if incident.vehicles_dispatched != [0, 0, 0]:
+                incident.status = "more vehicles needed"
+            else:
+                incident.status = "no vehicles available"
+                with self.locks['active_incidents']:
+                    self.active_incidents.pop(incident.id, None)
         
 
     def dispatch_specific_vehicle(self, vehicles, needed, incident):
@@ -191,4 +179,6 @@ class EmergencyResponseCenter(threading.Thread):
                     vehicle.incident = incident
                     vehicle.available = False
                     dispatched_count += 1
+                    with incident.lock:
+                        incident.register_observer(vehicle)
         return dispatched_count
