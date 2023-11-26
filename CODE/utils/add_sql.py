@@ -1,11 +1,11 @@
-from utils.constants import NINCIDENTS_PER_CITIZEN, NCITIZENS
+from utils.constants import NINCIDENTS_PER_CITIZEN, NCITIZENS, SQL_PASSWORD, SQL_USER
 import mysql.connector
 
 # Recall to start SQL
 class sql:
     def __init__(self):
-        self.all_incidents = set()
-        self.cnx = mysql.connector.connect(user='root', password='JoseAlcala',
+        self.all_incidents = {}
+        self.cnx = mysql.connector.connect(user=SQL_USER, password=SQL_PASSWORD,
                                       host='127.0.0.1')
         self.cursor = self.cnx.cursor()
 
@@ -15,23 +15,26 @@ class sql:
             print('Creating database')
 
         self.cursor.execute("CREATE DATABASE MadEmergencies")
-        self.cnx = mysql.connector.connect(user='root', password='JoseAlcala',
+        self.cnx = mysql.connector.connect(user=SQL_USER, password=SQL_PASSWORD,
                                            host='127.0.0.1', database='MadEmergencies')
         self.mycursor = self.cnx.cursor()
         self.mycursor.execute("CREATE TABLE emergencies (id INT AUTO_INCREMENT PRIMARY KEY, time_reported VARCHAR(255), "
                               "incident_type VARCHAR(255), location VARCHAR(255), severity INT, required_police INT, "
                                 "required_firetrucks INT, required_ambulances INT)")
 
-    def add_incident(self, time_reported, type, severity, required_police, required_firetrucks, required_ambulances, location):
-        incident_tuple = (time_reported, type, severity, required_police, required_firetrucks, required_ambulances, location)
-        if incident_tuple not in self.all_incidents:
-            self.all_incidents.add(incident_tuple)
+    def add_incident(self, time_reported, type, location, severity, required_police, required_firetrucks, required_ambulances):
+        unique_id = f"{time_reported}_{type}_{location}"  # Create a unique identifier
+        if unique_id not in self.all_incidents:
+            self.all_incidents[unique_id] = (time_reported, type, location, severity, required_police, required_firetrucks, required_ambulances)
+            return True
+        return False
 
     def add_data(self):
         statement = ("INSERT INTO emergencies (time_reported, incident_type, location, severity, required_police, required_firetrucks, "
                     "required_ambulances) VALUES (%s, %s, %s, %s, %s, %s, %s)")
-        self.mycursor.executemany(statement, list(self.all_incidents))
+        self.mycursor.executemany(statement, list(self.all_incidents.values()))
         self.cnx.commit()
+        self.all_incidents.clear()  # Clear the dictionary after data is added
         print("Data added to SQL")
 
 

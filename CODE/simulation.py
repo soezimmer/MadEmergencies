@@ -11,7 +11,7 @@ import logging
 class Simulation:
     def __init__(self, city):
         self.city = city
-        self.graph = city.graph  # Assuming City class has a 'graph' attribute
+        self.graph = city.graph 
         self.fig, self.ax = None, None
         self.citizen_scatter = None
         self.incident_scatter = None
@@ -26,7 +26,7 @@ class Simulation:
         gs = self.fig.add_gridspec(2, 2, height_ratios=[5, 1])  # Adjust for two rows and two columns
 
         # Map subplot
-        self.ax = self.fig.add_subplot(gs[0, :])  # Span the entire first row for the map
+        self.ax = self.fig.add_subplot(gs[0, :]) 
         ox.plot_graph(self.graph, ax=self.ax, node_size=0, show=False)
         self.ax.set_xlim([WEST, EAST])
         self.ax.set_ylim([SOUTH, NORTH])
