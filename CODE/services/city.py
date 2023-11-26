@@ -60,6 +60,9 @@ class City:
 
     def shutdown(self):
         logging.info("CITY SHUTTING DOWN")
+        self.emergency_response.sql.add_data()
+        self.emergency_response.sql.write_to_file()
+        
         time.sleep(5)
         # Join all threads once every vehicle is done with its job
 

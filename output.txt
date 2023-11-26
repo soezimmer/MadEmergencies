@@ -1,0 +1,6 @@
+Number of incidents solved: 58
+The most common incident: traffic_accident_major
+The most severe incident, a 1701035566.504611, had severity of wildfire. It required 0 ambulances, 2 firetrucks,and 85 police cars.
+Total number of police cars requested: 75
+Total number of firetrucks requested: 22
+Total number of ambulances requested: 46

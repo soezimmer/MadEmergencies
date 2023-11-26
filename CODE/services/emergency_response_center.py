@@ -4,6 +4,7 @@ import time
 import random
 from models.incident import Incident
 from utils.constants import INCIDENTS
+from utils.add_sql import sql
 import logging
 
 class EmergencyResponseCenter(threading.Thread):
@@ -36,6 +37,7 @@ class EmergencyResponseCenter(threading.Thread):
                         }
             self._instance = self
             self.city = city
+            self.sql = sql()
     
     def run(self):
         logging.info("Emergency Response Center activated")
@@ -148,6 +150,9 @@ class EmergencyResponseCenter(threading.Thread):
         needed_police_cars = incident.vehicles_needed[0]
         needed_firetrucks = incident.vehicles_needed[1]
         needed_ambulances = incident.vehicles_needed[2]
+
+        # add to SQL
+        self.sql.add_incident(incident.report_time, incident.incident_type, incident.severity, needed_police_cars, needed_firetrucks, needed_ambulances, incident.location)
 
         # Attempt to dispatch vehicles
         dispatched_police_cars = self.dispatch_specific_vehicle(self.police_cars, needed_police_cars, incident)

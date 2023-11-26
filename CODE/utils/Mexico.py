@@ -1,31 +1,63 @@
-NORTH, SOUTH, EAST, WEST = 40.501416, 40.459202, -3.606143, -3.711698
-FIRE_STATION = 55243514
-AMBULANCE_STATION = 26207177
-POLICE_STATION = 2421410285
-FIRE_TRUCKS = 10
-AMBULANCES = 12
-POLICE_CARS = 15
-NCITIZENS = 10
-NINCIDENTS_PER_CITIZEN = 3
+NORTH, SOUTH, EAST, WEST = 19.454006, 19.398128, -99.025623, -99.162876
+FIRE_STATION = 387799563
+AMBULANCE_STATION = 30628130
+POLICE_STATION = 1968094794
+FIRE_TRUCKS = 30
+AMBULANCES = 40
+POLICE_CARS = 50
+NCITIZENS = 30
+NINCIDENTS_PER_CITIZEN = 5
 CITIZEN_WAIT_TIME = (5, 15)
-CITIZEN_REPORT_PROBABILITY = 0.15
+CITIZEN_REPORT_PROBABILITY = 0.4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 INCIDENTS = {
-            'petty_theft': {
+            'Gang Crime': {
                 'required_police_cars': 1,
                 'required_firetrucks': 0,
                 'required_ambulances': 0,
                 'severity': 5,
                 'probability': 0.15
             },
-            'traffic_accident_minor': {
+            'Kidnapping': {
                 'required_police_cars': 1,
                 'required_firetrucks': 0,
                 'required_ambulances': 1,
                 'severity': 15,
                 'probability': 0.13
             },
-            'medical_emergency': {
+            'Some guy hacked Uber!': {
                 'required_police_cars': 0,
                 'required_firetrucks': 0,
                 'required_ambulances': 1,
