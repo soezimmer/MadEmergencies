@@ -31,6 +31,8 @@ class MovingObject(threading.Thread):
             self.position = (self.graph.nodes[self.current_node]['x'], self.graph.nodes[self.current_node]['y'])
             return True
         else:
+            self.route = []
+            self.route_index = 0
             return False  
         
     def determine_sleep_time(self):
