@@ -47,17 +47,18 @@ class EmergencyResponseCenter(threading.Thread):
 
 
     def queue_listener(self):
+        
         while self.city.citizens != [] or not self.active_incidents == {}:
             try:
-                if not self.incident_queue.empty():
-                    #logging.info(f"The queue is: {self.incident_queue.queue}")
-                    #logging.info(f"The active incidents are: {self.active_incidents}")
-                    with self.locks['incident_queue']:
-                        priority, incident_id = self.incident_queue.get()
-                    with self.locks['active_incidents'] and self.locks['logged_incidents']:
-                        incident = self.active_incidents[incident_id] if incident_id in self.active_incidents else self.logged_incidents[incident_id]
-                    #logging.info(f"Dispatching incident {incident.id} with priority {priority}")
-                    self.dispatch_vehicles(incident, priority)
+                with self.locks['incident_queue']:
+                    incidents_to_process = min(5, self.incident_queue.qsize())  # Process up to 5 incidents
+
+                    for _ in range(incidents_to_process):
+                        if not self.incident_queue.empty():
+                            priority, incident_id = self.incident_queue.get()
+                            with self.locks['active_incidents'] and self.locks['logged_incidents']:
+                                incident = self.active_incidents[incident_id] if incident_id in self.active_incidents else self.logged_incidents[incident_id]
+                            self.dispatch_vehicles(incident, priority)
             except Exception as e:
                 logging.error(f"There was an ERROR: {e}")
 
