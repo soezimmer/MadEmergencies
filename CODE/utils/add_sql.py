@@ -50,14 +50,18 @@ class sql:
         result = self.mycursor.fetchone()
         all['Most common incident'] = result[0]
 
+        # Most severe incident
         query = "SELECT * FROM emergencies WHERE severity = (SELECT MAX(severity) FROM emergencies) LIMIT 1"
         self.mycursor.execute(query)
         result = self.mycursor.fetchone()
-        all['Most severe incident (severness)'] = result[2]
-        all['Most severe incident (type)'] = result[1]
-        all['Most severe incident (police)'] = result[3]
-        all['Most severe incident (firetrucks)'] = result[4]
-        all['Most severe incident (ambulances)'] = result[5]
+        all['Most severe incident (time reported)'] = result[1]
+        all['Most severe incident (type)'] = result[2]
+        all['Most severe incident (location)'] = result[3]
+        all['Most severe incident (severity)'] = result[4]
+        all['Most severe incident (police)'] = result[5]
+        all['Most severe incident (firetrucks)'] = result[6]
+        all['Most severe incident (ambulances)'] = result[7]
+
 
         query = (
             "SELECT SUM(required_police) as sum_required_police, SUM(required_firetrucks) as sum_required_firetrucks, "
@@ -72,10 +76,9 @@ class sql:
         with open('output.txt', 'w') as f:
             f.write(f"Number of incidents solved: {all['Number of incidents']}\n")
             f.write(f"The most common incident: {all['Most common incident']}\n")
-            f.write(
-                f"The most severe incident, a {all['Most severe incident (type)']}, had severity of {all['Most severe incident (severness)']}. ")
-            f.write(
-                f"It required {all['Most severe incident (ambulances)']} ambulances, {all['Most severe incident (firetrucks)']} firetrucks,")
+            f.write(f"The most severe incident occurred at {all['Most severe incident (time reported)']} in {all['Most severe incident (location)']}, ")
+            f.write(f"was a {all['Most severe incident (type)']} with a severity of {all['Most severe incident (severity)']}. ")
+            f.write(f"It required {all['Most severe incident (ambulances)']} ambulances, {all['Most severe incident (firetrucks)']} firetrucks, ")
             f.write(f"and {all['Most severe incident (police)']} police cars.\n")
             f.write(f"Total number of police cars requested: {all['Total police requested']}\n")
             f.write(f"Total number of firetrucks requested: {all['Total firetrucks requested']}\n")

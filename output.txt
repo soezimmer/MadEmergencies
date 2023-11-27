@@ -1,6 +1,6 @@
-Number of incidents solved: 30
+Number of incidents solved: 45
 The most common incident: petty_theft
-The most severe incident, a 1701038142.170858, had severity of wildfire. It required 2 ambulances, 85 firetrucks,and 102359894 police cars.
-Total number of police cars requested: 41
-Total number of firetrucks requested: 21
-Total number of ambulances requested: 29
+The most severe incident occurred at 1701071295.7688901 in 76476088, was a terrorist_threat with a severity of 80. It required 3 ambulances, 1 firetrucks, and 4 police cars.
+Total number of police cars requested: 55
+Total number of firetrucks requested: 37
+Total number of ambulances requested: 40

@@ -5,10 +5,10 @@ POLICE_STATION = 2421410285
 FIRE_TRUCKS = 10
 AMBULANCES = 12
 POLICE_CARS = 15
-NCITIZENS = 10
+NCITIZENS = 15
 NINCIDENTS_PER_CITIZEN = 3
 CITIZEN_WAIT_TIME = (5, 15)
-CITIZEN_REPORT_PROBABILITY = 0.15
+CITIZEN_REPORT_PROBABILITY = 0.3
 SQL_USER = 'root'
 SQL_PASSWORD = 'JoseAlcala'
 
@@ -39,14 +39,14 @@ INCIDENTS = {
                 'required_firetrucks': 0,
                 'required_ambulances': 1,
                 'severity': 20,
-                'probability': 0.10
+                'probability': 0.08
             },
             'Jose Antonio is on fire': {
                 'required_police_cars': 1,
                 'required_firetrucks': 2,
                 'required_ambulances': 1,
                 'severity': 30,
-                'probability': 0.08
+                'probability': 0.07
             },
             'house_fire_small': {
                 'required_police_cars': 1,
