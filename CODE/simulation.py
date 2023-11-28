@@ -9,6 +9,28 @@ import logging
 
 
 class Simulation:
+    """
+    A class representing a simulation of emergency incidents in a city.
+
+    Attributes:
+    - city: The city object representing the simulated city.
+    - graph: The graph object representing the city's road network.
+    - fig: The figure object for plotting the simulation map.
+    - ax: The axes object for plotting the simulation map.
+    - citizen_scatter: The scatter plot object for citizens.
+    - incident_scatter: The scatter plot object for incidents.
+    - police_scatter: The scatter plot object for police.
+    - firetruck_scatter: The scatter plot object for firetrucks.
+    - ambulance_scatter: The scatter plot object for ambulances.
+    - end: A boolean indicating whether the simulation has ended.
+
+    Methods:
+    - plot_map: Plots the map for the simulation.
+    - start_simulation: Starts the simulation by deploying emergency services and citizens, and plotting the map.
+    - refresh_map: Refreshes the map by updating the positions of citizens, emergency services, and incidents.
+    - update_texts: Updates the text information for active incidents and incident queue.
+    - run: Runs the simulation by starting the emergency services, plotting the map, and animating the map updates.
+    """
     def __init__(self, city):
         self.city = city
         self.graph = city.graph 
@@ -20,8 +42,10 @@ class Simulation:
         self.ambulance_scatter = None
         self.end = False
 
-
     def plot_map(self):
+        """
+        Plots the map for the simulation.
+        """
         self.fig = plt.figure(figsize=(20, 22), facecolor='black')
         gs = self.fig.add_gridspec(2, 2, height_ratios=[5, 1])  # Adjust for two rows and two columns
 
@@ -59,11 +83,23 @@ class Simulation:
         plt.show()
 
     def start_simulation(self):
+        """
+        Starts the simulation by deploying emergency services and citizens, and plotting the map.
+        """
         self.deploy_emergency_services()
         self.deploy_citizens()
         self.plot_map()
 
     def refresh_map(self, frame):
+        """
+        Refreshes the map by updating the positions of citizens, emergency services, and incidents.
+
+        Parameters:
+        - frame: The frame number of the animation.
+
+        Returns:
+        A tuple of "artists" that have been changed.
+        """
         citizen_nodes = [citizen.current_node for citizen in self.city.citizens]
         police_nodes = [police.current_node for police in self.city.police_onsite]
         firetruck_nodes = [firetruck.current_node for firetruck in self.city.firetrucks_onsite]
@@ -89,7 +125,11 @@ class Simulation:
         # We need to return a tuple of "artists" that have been changed
         return self.citizen_scatter, self.incident_scatter, self.police_scatter, self.firetruck_scatter, self.ambulance_scatter, self.active_incidents_text, self.queue_text
 
+
     def update_texts(self):
+        """
+        Updates the text information for active incidents and incident queue.
+        """
         # Update text for active incidents
         active_incidents = self.city.emergency_response.active_incidents
         active_incidents_info = "\n".join([f"Incident {id} - {incident.incident_type} - Severity {round(incident.severity,2)}"
@@ -101,8 +141,10 @@ class Simulation:
                                         for priority, incident_id in self.city.emergency_response.incident_queue.queue])
         self.queue_text.set_text(incident_queue_info)
 
-
     def run(self):
+        """
+        Runs the simulation by starting the emergency services, plotting the map, and animating the map updates.
+        """
         self.city.start_services()
         self.plot_map()
         self.anim = FuncAnimation(self.fig, self.refresh_map, interval=50, blit=True)

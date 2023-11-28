@@ -3,6 +3,21 @@ import mysql.connector
 
 # Recall to start SQL
 class sql:
+    """
+    A class representing SQL operations for managing emergency incidents.
+
+    Attributes:
+    - all_incidents (dict): A dictionary to store all incidents.
+    - cnx (mysql.connector.connection.MySQLConnection): The MySQL connection object.
+    - cursor (mysql.connector.cursor.MySQLCursor): The MySQL cursor object.
+    - mycursor (mysql.connector.cursor.MySQLCursor): The MySQL cursor object for executing queries.
+
+    Methods:
+    - __init__(self): Initializes the SQL class and establishes a connection to the database.
+    - add_incident(self, time_reported, type, location, severity, required_police, required_firetrucks, required_ambulances): Adds an incident to the all_incidents dictionary.
+    - add_data(self): Inserts the data from all_incidents dictionary into the emergencies table in the database.
+    - write_to_file(self): Retrieves various statistics from the emergencies table and writes them to a file.
+    """
     def __init__(self):
         self.all_incidents = {}
         self.cnx = mysql.connector.connect(user=SQL_USER, password=SQL_PASSWORD,
@@ -23,6 +38,21 @@ class sql:
                                 "required_firetrucks INT, required_ambulances INT)")
 
     def add_incident(self, time_reported, type, location, severity, required_police, required_firetrucks, required_ambulances):
+        """
+        Adds an incident to the all_incidents dictionary.
+
+        Parameters:
+        - time_reported (str): The time the incident was reported.
+        - type (str): The type of incident.
+        - location (str): The location of the incident.
+        - severity (int): The severity level of the incident.
+        - required_police (int): The number of police required for the incident.
+        - required_firetrucks (int): The number of firetrucks required for the incident.
+        - required_ambulances (int): The number of ambulances required for the incident.
+
+        Returns:
+        - bool: True if the incident was added successfully, False if the incident already exists.
+        """
         unique_id = f"{time_reported}_{type}_{location}"  # Create a unique identifier
         if unique_id not in self.all_incidents:
             self.all_incidents[unique_id] = (time_reported, type, location, severity, required_police, required_firetrucks, required_ambulances)
@@ -30,6 +60,9 @@ class sql:
         return False
 
     def add_data(self):
+        """
+        Inserts the data from all_incidents dictionary into the emergencies table in the database.
+        """
         statement = ("INSERT INTO emergencies (time_reported, incident_type, location, severity, required_police, required_firetrucks, "
                     "required_ambulances) VALUES (%s, %s, %s, %s, %s, %s, %s)")
         self.mycursor.executemany(statement, list(self.all_incidents.values()))
@@ -39,6 +72,9 @@ class sql:
 
 
     def write_to_file(self):
+        """
+        Retrieves various statistics from the emergencies table and writes them to a file.
+        """
         all = {}
         query = "SELECT MAX(id) as max_incident_id FROM emergencies"
         self.mycursor.execute(query)

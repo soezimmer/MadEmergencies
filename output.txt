@@ -1,6 +1,6 @@
-Number of incidents solved: 125
-The most common incident: Gang Crime
-The most severe incident occurred at 1701072676.7554471 in 3993977495, was a earthquake_major with a severity of 100. It required 4 ambulances, 5 firetrucks, and 5 police cars.
-Total number of police cars requested: 169
-Total number of firetrucks requested: 105
-Total number of ambulances requested: 113
+Number of incidents solved: 45
+The most common incident: medical_emergency
+The most severe incident occurred at 1701213402.215401 in 21282217, was a wildfire with a severity of 85. It required 3 ambulances, 4 firetrucks, and 2 police cars.
+Total number of police cars requested: 64
+Total number of firetrucks requested: 38
+Total number of ambulances requested: 44

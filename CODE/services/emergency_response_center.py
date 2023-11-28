@@ -17,6 +17,15 @@ class EmergencyResponseCenter(threading.Thread):
         return cls._instance
 
     def __init__(self, firetrucks, police_cars, ambulances, city):
+        """
+        Initializes an instance of the EmergencyResponseCenter class.
+
+        Args:
+            firetrucks (list): A list of firetrucks available for emergency response.
+            police_cars (list): A list of police cars available for emergency response.
+            ambulances (list): A list of ambulances available for emergency response.
+            city (City): The name of the city where the emergency response center is located.
+        """
         if self._instance is not None:
             raise Exception("This class is a singleton!")
         else:
@@ -30,24 +39,29 @@ class EmergencyResponseCenter(threading.Thread):
             self.resolved_incidents = {}
             self.logged_incidents = {}
             self.locks = {
-                            "active_incidents": threading.RLock(),
-                            "resolved_incidents": threading.RLock(),
-                            "logged_incidents": threading.RLock(),
-                            "incident_queue": threading.RLock()
-                        }
+                "active_incidents": threading.RLock(),
+                "resolved_incidents": threading.RLock(),
+                "logged_incidents": threading.RLock(),
+                "incident_queue": threading.RLock()
+            }
             self._instance = self
             self.city = city
             self.sql = sql()
-    
+
     def run(self):
+        """
+        Starts the Emergency Response Center and listens to the incident queue.
+        """
         logging.info("Emergency Response Center activated")
         while self.city.citizens == []:
             time.sleep(0.2)
         self.queue_listener()
 
-
     def queue_listener(self):
-        
+        """
+        Listens to the incident queue and dispatches vehicles to handle the incidents.
+        Continues processing until there are no more citizens or active incidents.
+        """
         while self.city.citizens != [] or not self.active_incidents == {}:
             try:
                 with self.locks['incident_queue']:
@@ -68,37 +82,44 @@ class EmergencyResponseCenter(threading.Thread):
                     if incident.resolved:
                         incidents_to_remove.append(incident_id)
                         self.resolved_incidents[incident_id] = incident
-                        #logging.info(f"Resolved incident {incident_id} and removed it from active incidents")
+                        # logging.info(f"Resolved incident {incident_id} and removed it from active incidents")
                 # Remove the resolved incidents from active_incidents
                 for incident_id in incidents_to_remove:
                     self.active_incidents.pop(incident_id)
                     with self.locks['incident_queue']:
                         if (priority, incident_id) in self.incident_queue.queue:
                             self.incident_queue.queue.remove((priority, incident_id))
-                            #logging.info(f"Removed incident {incident_id} from incident queue as it is resolved")
+                            # logging.info(f"Removed incident {incident_id} from incident queue as it is resolved")
 
             self.update_priorities()
             time.sleep(0.1)
-        
+
         logging.info("All citizens are done, shutting down Emergency Response Center")
         self.city.shutdown()
 
-
     def update_priorities(self):
+        """
+        Updates the priorities of the incidents in the incident queue.
+        """
         with self.locks['incident_queue']:
             updated_incidents = []
             while not self.incident_queue.empty():
                 priority, incident_id = self.incident_queue.get()
                 if priority > 0:
-                    priority = round(priority - 0.1, 2) 
+                    priority = round(priority - 0.1, 2)
                 updated_incidents.append((priority, incident_id))  # Increase priority
 
             # Put the updated incidents back in the queue
             for incident in updated_incidents:
                 self.incident_queue.put(incident)
 
-
     def report_incident(self, incident_location):
+        """
+        Reports a new incident to the Emergency Response Center.
+
+        Args:
+            incident_location (str): The location of the incident.
+        """
         incidents = INCIDENTS
         incident_types = list(incidents.keys())
         probabilities = [incidents[incident]['probability'] for incident in incident_types]
@@ -109,15 +130,25 @@ class EmergencyResponseCenter(threading.Thread):
         reported = time.time()
         incident = Incident(id, incident_location, incident_type, reported, incidents[incident_type]['severity'])
         incident_priority = self.determine_incident_priority(incident_type, incident)
-        logging.info(f"New incident {incident.id}  reported at {incident_location} with type {incident_type}, severity {incident.severity}, and priority {incident_priority} \n Firetrucks needed: {incident.vehicles_needed[1]} \n Police cars needed: {incident.vehicles_needed[0]} \n Ambulances needed: {incident.vehicles_needed[2]}")
+        logging.info(
+            f"New incident {incident.id}  reported at {incident_location} with type {incident_type}, severity {incident.severity}, and priority {incident_priority} \n Firetrucks needed: {incident.vehicles_needed[1]} \n Police cars needed: {incident.vehicles_needed[0]} \n Ambulances needed: {incident.vehicles_needed[2]}")
 
         with self.locks["logged_incidents"]:
             self.logged_incidents[incident.id] = incident
         with self.locks["incident_queue"]:
             self.incident_queue.put((incident_priority, incident.id))
 
-            
     def determine_incident_priority(self, incident_type, incident):
+        """
+        Determines the priority of an incident based on its type and severity.
+
+        Args:
+            incident_type (str): The type of the incident.
+            incident (Incident): The incident object.
+
+        Returns:
+            int: The priority of the incident.
+        """
         incident_details = INCIDENTS.get(incident_type, {})
 
         # Get severity and required resources for the incident
@@ -147,13 +178,21 @@ class EmergencyResponseCenter(threading.Thread):
         return priority
 
     def dispatch_vehicles(self, incident, priority):
+        """
+        Dispatches vehicles to handle an incident.
+
+        Args:
+            incident (Incident): The incident object.
+            priority (int): The priority of the incident.
+        """
         # determine the number of vehicles needed for the incident
         needed_police_cars = incident.vehicles_needed[0]
         needed_firetrucks = incident.vehicles_needed[1]
         needed_ambulances = incident.vehicles_needed[2]
 
         # add to SQL
-        self.sql.add_incident(incident.report_time, incident.incident_type, incident.location, incident.severity, needed_police_cars, needed_firetrucks, needed_ambulances)
+        self.sql.add_incident(incident.report_time, incident.incident_type, incident.location, incident.severity,
+                              needed_police_cars, needed_firetrucks, needed_ambulances)
 
         # Attempt to dispatch vehicles
         dispatched_police_cars = self.dispatch_specific_vehicle(self.police_cars, needed_police_cars, incident)
@@ -161,12 +200,14 @@ class EmergencyResponseCenter(threading.Thread):
         dispatched_ambulances = self.dispatch_specific_vehicle(self.ambulances, needed_ambulances, incident)
 
         incident.vehicles_dispatched = [dispatched_police_cars, dispatched_firetrucks, dispatched_ambulances]
-        incident.vehicles_needed = [needed_police_cars - dispatched_police_cars, needed_firetrucks - dispatched_firetrucks, needed_ambulances - dispatched_ambulances]
+        incident.vehicles_needed = [needed_police_cars - dispatched_police_cars,
+                                    needed_firetrucks - dispatched_firetrucks,
+                                    needed_ambulances - dispatched_ambulances]
 
         if incident.vehicles_needed == [0, 0, 0]:
             # Option 1: All cars dispatched
             incident.status = "dispatched"
-            #logging.info(f"All required vehicles dispatched to incident {incident.id}")
+            # logging.info(f"All required vehicles dispatched to incident {incident.id}")
             with self.locks['logged_incidents']:
                 self.logged_incidents[incident.id] = incident
             with self.locks['active_incidents']:
@@ -179,17 +220,27 @@ class EmergencyResponseCenter(threading.Thread):
                 self.incident_queue.put((priority, incident.id))
             with self.locks['active_incidents']:
                 self.active_incidents[incident.id] = incident
-            #logging.info(f"Re-queued incident {incident.id} with updated priority {priority}")
+            # logging.info(f"Re-queued incident {incident.id} with updated priority {priority}")
         else:
             # Option 3: No cars dispatched
             incident.status = "no vehicles available"
             priority = priority - 5 if priority > 0 else priority
             with self.locks['incident_queue']:
                 self.incident_queue.put((priority, incident.id))
-            #logging.info(f"Re-queued incident {incident.id} with significantly increased priority {priority}")
-        
+            # logging.info(f"Re-queued incident {incident.id} with significantly increased priority {priority}")
 
     def dispatch_specific_vehicle(self, vehicles, needed, incident):
+        """
+        Dispatches a specific type of vehicle to handle an incident.
+
+        Args:
+            vehicles (list): A list of vehicles of a specific type.
+            needed (int): The number of vehicles needed.
+            incident (Incident): The incident object.
+
+        Returns:
+            int: The number of vehicles dispatched.
+        """
         dispatched_count = 0
         for vehicle in vehicles:
             with vehicle.lock:

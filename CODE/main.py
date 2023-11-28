@@ -4,6 +4,10 @@ import logging
 from utils.constants import NCITIZENS
 
 def main():
+    """
+    Entry point of the program.
+    Initializes the city, runs the simulation, and waits for the emergency response center to finish.
+    """
     logging.info("Starting simulation")
     my_city = City(NCITIZENS)  # Create an instance of the City class
     simulation = Simulation(my_city)  # Create an instance of the Simulation class with the city instance
