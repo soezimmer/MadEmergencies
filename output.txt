@@ -1,6 +1,6 @@
 Number of incidents solved: 45
-The most common incident: medical_emergency
-The most severe incident occurred at 1701213402.215401 in 21282217, was a wildfire with a severity of 85. It required 3 ambulances, 4 firetrucks, and 2 police cars.
-Total number of police cars requested: 64
-Total number of firetrucks requested: 38
-Total number of ambulances requested: 44
+The most common incident: house_fire_small
+The most severe incident occurred at 1701213960.788535 in 352943929, was a wildfire with a severity of 85. It required 3 ambulances, 4 firetrucks, and 2 police cars.
+Total number of police cars requested: 61
+Total number of firetrucks requested: 37
+Total number of ambulances requested: 42
